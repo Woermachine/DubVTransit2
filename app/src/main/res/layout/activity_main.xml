@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    >
+
+
+
+    <ImageView
+        android:focusable="false"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:src="@mipmap/prt_background"
+        android:scaleType="centerCrop"
+        android:layout_centerInParent="true"/>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
+        <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/relativeLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/main_menu"
+            android:padding="10dp"
+            android:layout_alignParentTop="true"
+            android:layout_alignParentStart="true">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FF000000"
+                android:text="@string/to_main"/>
+
+            <Button
+                android:id="@+id/destView"
+                android:contentDescription="@string/change_dest"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/textView"
+                android:layout_below="@+id/textView"
+                android:onClick="showLocationList"
+                android:text="@string/destination"
+                android:textColorHint="#CCFFFFFF"/>
+
+            <TextView
+                android:id="@+id/textView2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FF000000"
+                android:layout_alignStart="@+id/destView"
+                android:layout_below="@+id/destView"
+                android:text="@string/from_main" />
+
+            <Button
+                android:id="@+id/startView"
+                android:contentDescription="@string/change_start"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/textView2"
+                android:layout_below="@+id/textView2"
+                android:onClick="showLocationList"
+                android:text="@string/current_location"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#CCFFFFFF" />
+
+            <CheckBox
+                android:id="@+id/use_current_time"
+                android:contentDescription="@string/current_time_bool"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/textView3"
+                android:layout_alignBottom="@+id/textView3"
+                android:layout_toEndOf="@+id/textView3"
+                android:checked="true"
+                android:text="@string/current_time"
+                android:textColor="#FF000000" />
+
+            <TextView
+                android:id="@+id/textView3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/startView"
+                android:layout_below="@+id/startView"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:text="@string/departure_time"
+                android:textColor="#FF000000" />
+
+
+            <Button
+                android:id="@+id/timeButton"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:contentDescription="@string/change_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignStart="@+id/textView3"
+                android:layout_below="@+id/textView3"
+                android:clickable="true"
+                android:color="#CC000000"
+                android:text="@string/current_time"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:onClick="showTimePickerDialog" />
+
+            <Button
+                android:id="@+id/dateButton"
+                android:contentDescription="@string/change_date"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignBaseline="@+id/timeButton"
+                android:layout_alignBottom="@+id/timeButton"
+                android:layout_toEndOf="@+id/timeButton"
+                android:clickable="true"
+                android:color="#CC000000"
+                android:onClick="showDatePickerDialog"
+                android:text="@string/current_day"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:visibility="visible" />
+
+        </RelativeLayout>
+        <Button
+            android:id="@+id/prt_status"
+            android:contentDescription="@string/status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:backgroundTint="@color/colorPrimary"
+            android:clickable="true"
+            android:drawableTop="@mipmap/prt_icon"
+            android:text="@string/prt_status"
+            android:textColor="#000000"
+            android:layout_marginTop="10dp"
+            android:paddingTop="20dp"
+            android:layout_below="@+id/relativeLayout"
+            android:layout_alignEnd="@+id/relativeLayout"
+            android:layout_alignStart="@+id/relativeLayout"
+            android:elevation="10dp"/>
+        <TextView
+            android:id="@+id/prt_badge"
+            android:layout_width="0dp"
+            android:layout_height="10dp"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:layout_marginTop="10dp"
+            android:layout_alignEnd="@+id/prt_status"
+            android:layout_alignStart="@+id/prt_status"
+            android:layout_alignTop="@+id/prt_status"
+            android:paddingTop="20dp"
+            android:background="@drawable/rounded_bar_green"
+            android:elevation="10dp"/>
+    </RelativeLayout>
+
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/continueButton"
+        android:contentDescription="@string/send_request"
+        android:onClick="launchDirectionActivity"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        app:srcCompat="@mipmap/continue_arrow"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_margin="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:elevation="2dp"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/courseButton"
+        android:contentDescription="@string/send_request"
+        android:onClick="launchCourseList"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        app:srcCompat="@mipmap/schedule_icon"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_margin="10dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart= "true"
+        android:elevation="2dp"/>
+
+
+</RelativeLayout>

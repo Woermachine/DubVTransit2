@@ -1,0 +1,14 @@
+/build
+
+# Project exclude paths
+/.gradle/
+.DS_Store
+
+.idea/*
+apikey.properties
+
+gradle/wrapper/gradle-wrapper.jar
+
+gradle/wrapper/gradle-wrapper.properties
+
+local.properties

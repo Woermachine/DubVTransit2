@@ -1,0 +1,64 @@
+<resources>
+    <string name="app_name">DubVTransit</string>
+
+    <!-- ************* -->
+    <!-- Main Activity -->
+    <!-- ************* -->
+    <string name="origin">Origin</string>
+    <string name="destination">Destination</string>
+    <string name="from_main">From</string>
+    <string name="to_main">To</string>
+    <string name="departure_time">Departure Time</string>
+    <string name="current_time">Current Time</string>
+    <string name="current_day">Current Day</string>
+    <string name="prt_status">PRT Status</string>
+    <string name="continue_button">Continue</string>
+    <string name="current_location">Current Location</string>
+    <string name="background_desc">Continue Button</string>
+
+    <!-- Content Description -->
+    <string name="banner_ad">A banner ad</string>
+    <string name="change_dest">change the destination</string>
+    <string name="change_start">change the starting location</string>
+    <string name="change_time">change the departure time</string>
+    <string name="change_date">change the departure date</string>
+    <string name="status">PRT Status, click to update, long press to get description</string>
+    <string name="send_request">send request</string>
+    <string name="learn_more">learn more about the developers</string>
+    <string name="current_time_bool">use the current or not</string>
+
+    <!-- ****************** -->
+    <!-- Direction Activity -->
+    <!-- ****************** -->
+
+    <string name="from">From:</string>
+    <string name="to">To:</string>
+    <string name="directions">directions</string>
+    <string name="bus_description">Show direction using bus transit</string>
+    <string name="prt_description">Show direction to PRT station, then to your destination</string>
+    <string name="walking_description">Show direction for walking</string>
+    <string name="car_description">Show directions for driving</string>
+    <string name="open_directions">Open directions in another app</string>
+    <string name="ZeroMin">0 MINS</string>
+
+
+    <!-- ************ -->
+    <!-- Alert Dialog -->
+    <!-- ************ -->
+    <string name="alert_title">Open in Maps</string>
+    <string name="alert_message">Navigate to:</string>
+    <string name="alert_option_prt">Nearest PRT Station</string>
+    <string name="alert_option_dest">Destination</string>
+
+    <!-- ************ -->
+    <!-- Course -->
+    <!-- ************ -->
+    <string name="course_title">Course Title</string>
+    <string name="course_location">Location</string>
+    <string name="course_title_hint">CHEM 101</string>
+    <string name="course_note_hint">Room G11, Ms. Frizzle</string>
+    <string name="course_destination">Destination</string>
+    <string name="course_list_title">My Courses</string>
+    <string name="course_delete">Delete this course</string>
+
+</resources>

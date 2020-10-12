@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/from_to"
+        android:background="@color/colorPrimary">
+
+        <TextView
+            android:id="@+id/start_location"
+            android:contentDescription="@string/origin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/from"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"
+            />
+
+        <TextView
+            android:id="@+id/destination_location"
+            android:contentDescription="@string/destination"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/to"
+            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@android:color/darker_gray"/>
+    </LinearLayout>
+
+
+
+    <ListView
+        android:id="@+id/list2"
+        android:contentDescription="@string/directions"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_below="@+id/from_to"
+        android:layout_above="@+id/button_list2"/>
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@android:color/darker_gray"
+        android:layout_above="@id/button_list2"/>
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:id="@+id/button_list2"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentStart="true">
+
+        <Button
+            android:id="@+id/BusButton"
+            android:contentDescription="@string/bus_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:drawableTop="@mipmap/bus_icon"
+            android:onClick="changeSelected"
+            android:text="@string/ZeroMin"
+            android:textColor="#000000"
+            android:paddingTop="5dp"
+            tools:ignore="ButtonStyle" />
+
+        <Button
+            android:id="@+id/PRTButton"
+            android:contentDescription="@string/prt_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:drawableTop="@mipmap/prt_icon"
+            android:onClick="changeSelected"
+            android:scaleType="fitXY"
+            android:text="@string/ZeroMin"
+            android:textColor="#000000"
+            android:paddingTop="5dp"
+            tools:ignore="ButtonStyle" />
+
+        <Button
+            android:id="@+id/WalkButton"
+            android:contentDescription="@string/walking_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:drawableTop="@mipmap/walking"
+            android:onClick="changeSelected"
+            android:text="@string/ZeroMin"
+            android:textColor="#000000"
+            android:paddingTop="5dp"
+            tools:ignore="ButtonStyle" />
+
+        <Button
+            android:id="@+id/CarButton"
+            android:contentDescription="@string/walking_description"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="#FFFFFF"
+            android:drawableTop="@mipmap/car_icon"
+            android:elevation="0dp"
+            android:onClick="changeSelected"
+            android:text="@string/ZeroMin"
+            android:textColor="#000000"
+            android:paddingTop="5dp"
+            tools:ignore="ButtonStyle" />
+    </LinearLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/prtHolder"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@+id/button_list2"
+        android:background="#00FFFFFF"
+        android:layout_alignParentEnd="true">
+
+        <Space
+            android:id="@+id/midpoint"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_centerHorizontal="true"/>
+
+        <TextView
+            android:id="@+id/PRTBadge"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_alignEnd="@id/midpoint"
+            android:background="@drawable/rounded_textview_green" />
+
+    </RelativeLayout>
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/NavigationButton"
+        android:contentDescription="@string/open_directions"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@id/list2"
+        android:layout_alignParentEnd="true"
+        android:clickable="true"
+        android:focusable="true"
+        app:srcCompat="@drawable/ic_navigation_white_36dp"
+        android:layout_margin="10dp"
+        android:elevation="2dp"/>
+
+</RelativeLayout>
