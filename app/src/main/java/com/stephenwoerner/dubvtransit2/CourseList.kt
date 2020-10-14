@@ -82,7 +82,7 @@ class CourseList : ListActivity() {
                 v.delete_button.setImageDrawable(ContextCompat.getDrawable(context, android.R.drawable.ic_menu_delete))
                 return v
             }
-            return convertView!!
+            return convertView
         }
 
     }

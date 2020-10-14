@@ -7,13 +7,13 @@ def apiKeyProperties = new Properties()
 apiKeyProperties.load(new FileInputStream(apiKeyPropertiesFile))
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion "29.0.2"
+    compileSdkVersion 30
+    buildToolsVersion "30.0.2"
     defaultConfig {
         applicationId "com.stephenwoerner.dubvtransit"
         minSdkVersion 23
-        targetSdkVersion 29
-        versionCode 5
+        targetSdkVersion 30
+        versionCode 1
         versionName "2.0.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_KEY", apiKeyProperties['MAPS_KEY'])

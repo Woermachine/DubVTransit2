@@ -91,9 +91,9 @@ class PickLocationExpandable : Activity() {
         expandable_list.setAdapter(mAdapter)
 
         // perform set on group click listener event
-        expandable_list.setOnGroupClickListener { parent, v, groupPosition, id -> false }
+        expandable_list.setOnGroupClickListener { _, _, _, _ -> false }
         // perform set on child click listener event
-        expandable_list.setOnChildClickListener{ parent, v, groupPosition, childPosition, id ->
+        expandable_list.setOnChildClickListener{ _, _, groupPosition, childPosition, _ ->
             val resultIntent = Intent()
             resultIntent.putExtra("selected", childItems[groupPosition][childPosition])
             setResult(RESULT_OK, resultIntent)

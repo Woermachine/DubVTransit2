@@ -13,8 +13,8 @@ internal class PRTModel private constructor(private val context: Context) {
     private var mRequestQueue: RequestQueue?
     var status = "0"
     var message = ""
-    var duration = ""
-    var busesDispatched = ""
+    private var duration = ""
+    private var busesDispatched = ""
 
     private lateinit var stations: Array<String>
     private val prtStations = arrayOf("WalnutPRT", "BeechurstPRT", "EngineeringPRT", "TowersPRT", "MedicalPRT")

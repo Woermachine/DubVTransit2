@@ -126,7 +126,7 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
             destinationStr = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
         }
         destination = model.allHashMap[destinationStr]!!
-        NavigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton("Cancel") { dialog, whichButton -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(R.drawable.ic_navigation_black_36dp).setMessage(R.string.alert_message).show() }
+        NavigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(R.drawable.ic_navigation_black_36dp).setMessage(R.string.alert_message).show() }
 
         progress = ProgressBar(context)
         progress.isIndeterminate = true

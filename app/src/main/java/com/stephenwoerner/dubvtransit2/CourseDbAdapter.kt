@@ -17,7 +17,7 @@ class CourseDbAdapter {
         private lateinit var mDbHelper: DatabaseHelper
         private lateinit var mDb: SQLiteDatabase
 
-        private class DatabaseHelper internal constructor(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
+        private class DatabaseHelper(context: Context?) : SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
             override fun onCreate(db: SQLiteDatabase) {
                 db.execSQL(DATABASE_CREATE)
             }

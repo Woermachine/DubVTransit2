@@ -10,12 +10,12 @@ import android.app.TimePickerDialog.OnTimeSetListener
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -24,7 +24,6 @@ import java.util.*
  * Created by Stephen on 3/23/2017.
  */
 class MainActivity : Activity() {
-    private val TAG = "MainActivity"
     private lateinit var leavingTime: Calendar
     private lateinit var model: PRTModel
 
@@ -39,12 +38,12 @@ class MainActivity : Activity() {
         setContentView(R.layout.activity_main)
         model = PRTModel.get(applicationContext)
         model.requestPRTStatus()
-        destView.setOnClickListener{ showLocationList(it) }
-        startView.setOnClickListener{ showLocationList(it) }
+        destView.setOnClickListener { showLocationList(it) }
+        startView.setOnClickListener { showLocationList(it) }
         leavingTime = Calendar.getInstance()
         timeButton.text = timeFormat.format(leavingTime.time)
         dateButton.text = dateFormat.format(leavingTime.time)
-        use_current_time.setOnClickListener{
+        use_current_time.setOnClickListener {
             if (use_current_time.isChecked) {
                 useCurrentTime = true
                 timeButton.visibility = View.GONE
@@ -56,15 +55,27 @@ class MainActivity : Activity() {
             }
         }
         prt_status.setOnClickListener {
-            if (model.requestPRTStatus()) Toast.makeText(applicationContext, "You can only update the status once every 30 seconds\nLong press to see full prt status", Toast.LENGTH_LONG).show()
+            if (model.requestPRTStatus()) Toast.makeText(
+                applicationContext,
+                "You can only update the status once every 30 seconds\nLong press to see full prt status",
+                Toast.LENGTH_LONG
+            ).show()
             prtButtonColor()
         }
         prt_status.setOnLongClickListener {
             showPRTDialog()
             true
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                1
+            )
         }
         if (use_current_time.isChecked) {
             useCurrentTime = true
@@ -76,7 +87,7 @@ class MainActivity : Activity() {
             dateButton.visibility = View.VISIBLE
         }
         prtButtonColor()
-        Log.d(TAG, "setup complete")
+        Timber.d("setup complete")
     }
 
     /**
@@ -107,16 +118,22 @@ class MainActivity : Activity() {
      * @param v the button
      */
     fun showTimePickerDialog( v: View?) {
-        Log.d(TAG, "building time picker dialog")
-        val listener = OnTimeSetListener { view, hourOfDay, minute ->
+        Timber.d("building time picker dialog")
+        val listener = OnTimeSetListener { _, hourOfDay, minute ->
             leavingTime[Calendar.HOUR_OF_DAY] = hourOfDay
             leavingTime[Calendar.MINUTE] = minute
             timeButton.text = timeFormat.format(leavingTime.time)
         }
-        val timePickerDialog = TimePickerDialog(this, listener, leavingTime[Calendar.HOUR_OF_DAY], leavingTime[Calendar.MINUTE], false)
+        val timePickerDialog = TimePickerDialog(
+            this,
+            listener,
+            leavingTime[Calendar.HOUR_OF_DAY],
+            leavingTime[Calendar.MINUTE],
+            false
+        )
         timePickerDialog.setTitle("Time Dialog")
         //timePickerDialog.amPM
-        Log.d(TAG, "showing time picker dialog")
+        Timber.d("showing time picker dialog")
         timePickerDialog.show()
     }
 
@@ -126,16 +143,22 @@ class MainActivity : Activity() {
      * @param v the button
      */
     fun showDatePickerDialog(v: View?) {
-        Log.d(TAG, "building date picker dialog")
+        Timber.d("building date picker dialog")
         val listener = OnDateSetListener { dp, year, month, dayOfMonth ->
             leavingTime[Calendar.YEAR] = year
             leavingTime[Calendar.MONTH] = month
             leavingTime[Calendar.DAY_OF_MONTH] = dayOfMonth
             dateButton!!.text = dateFormat.format(leavingTime.time)
         }
-        val datePickerDialog = DatePickerDialog(this, listener, leavingTime[Calendar.YEAR], leavingTime[Calendar.MONTH], leavingTime[Calendar.DAY_OF_MONTH])
+        val datePickerDialog = DatePickerDialog(
+            this,
+            listener,
+            leavingTime[Calendar.YEAR],
+            leavingTime[Calendar.MONTH],
+            leavingTime[Calendar.DAY_OF_MONTH]
+        )
         datePickerDialog.setTitle("Date Dialog")
-        Log.d(TAG, "showing date picker")
+        Timber.d("showing date picker")
         datePickerDialog.show()
     }
 
@@ -161,13 +184,14 @@ class MainActivity : Activity() {
      */
     private fun launchDirectionActivity() {
         if (destView.text.toString().compareTo("Destination", true) == 0) {
-            Log.d(TAG, "Failed to launch, no destination selected")
+            Timber.d("Failed to launch, no destination selected")
             Toast.makeText(this, "Must specify a destination", Toast.LENGTH_LONG).show()
             return
         }
         if (destView.text.toString().compareTo("Current Location", true) == 0) {
-            Log.d(TAG, "Failed to launch, current location is not a valid destination")
-            Toast.makeText(this, "Current Location is not a valid destination", Toast.LENGTH_LONG).show()
+            Timber.d("Failed to launch, current location is not a valid destination")
+            Toast.makeText(this, "Current Location is not a valid destination", Toast.LENGTH_LONG)
+                .show()
             return
         }
         val intent = Intent(this, DirectionActivity::class.java)
@@ -175,7 +199,7 @@ class MainActivity : Activity() {
         intent.putExtra("destination", destView.text)
         intent.putExtra("leavingTime", leavingTime.timeInMillis)
         intent.putExtra("useCurrentTime", useCurrentTime)
-        Log.d(TAG, "Launching direction activity")
+        Timber.d("Launching direction activity")
         startActivity(intent)
     }
 
@@ -188,7 +212,7 @@ class MainActivity : Activity() {
         //intent.putExtra("destination",destView.getText());
         //intent.putExtra("leavingTime",leavingTime.getTimeInMillis());
         //intent.putExtra("useCurrentTime",useCurrentTime);
-        Log.d(TAG, "Launching course list")
+        Timber.d("Launching course list")
         startActivity(intent)
     }
 
@@ -196,10 +220,10 @@ class MainActivity : Activity() {
      * Displays a simple message which is the current status of the PRT
      */
     private fun showPRTDialog() {
-        Log.d(TAG, "building prt dialog")
+        Timber.d("building prt dialog")
         val alertDialog = AlertDialog.Builder(this).create()
         alertDialog.setMessage(model.message)
-        Log.d(TAG, "showing PRT Dialog")
+        Timber.d("showing PRT Dialog")
         alertDialog.show()
     }
 
@@ -207,10 +231,10 @@ class MainActivity : Activity() {
      * Set PRT status color
      */
     private fun prtButtonColor() {
-        Log.d(TAG, "updating a prt status color")
+        Timber.d("updating a prt status color")
         if (model.status == "1")
-            prt_badge.background = getDrawable(R.drawable.rounded_bar_green)
+            prt_badge.background = ContextCompat.getDrawable(this, R.drawable.rounded_bar_green)
         else
-            prt_badge.background = getDrawable(R.drawable.rounded_bar_red)
+            prt_badge.background = ContextCompat.getDrawable(this, R.drawable.rounded_bar_red)
     }
 }
