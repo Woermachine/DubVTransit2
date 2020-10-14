@@ -57,7 +57,7 @@ class MapsAsyncTask : AsyncTask<Any, Void?, Boolean?>() {
         val closestPRTAStr = model.allHashMap[closestPRTA]
         val closestPRTBStr = model.allHashMap[closestPRTB]
 
-        val geoContext = GeoApiContext().setApiKey("AIzaSyBAZKAdoOXNlUUj-3AuLgGlsYnxgcdHBxQ")
+        val geoContext = GeoApiContext().setApiKey(BuildConfig.MAPS_KEY)
         val instant = Instant(leavingTime.timeInMillis)
 
         //Get Google Maps Travel Times
