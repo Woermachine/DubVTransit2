@@ -1,4 +1,4 @@
-package com.stephenwoerner.dubvtransit2
+package com.stephenwoerner.dubvtransittwo
 
 import android.app.ListActivity
 import android.content.Context
@@ -8,9 +8,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
-import android.widget.TextView
 import androidx.core.content.ContextCompat
-import kotlinx.android.synthetic.main.course_items.*
 import kotlinx.android.synthetic.main.course_items.view.*
 import kotlinx.android.synthetic.main.course_lists.*
 import java.util.*

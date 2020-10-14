@@ -1,4 +1,4 @@
-package com.stephenwoerner.dubvtransit2
+package com.stephenwoerner.dubvtransittwo
 
 import android.content.ContentValues
 import android.content.Context

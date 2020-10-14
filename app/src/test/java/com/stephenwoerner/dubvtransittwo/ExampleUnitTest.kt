@@ -1,4 +1,4 @@
-package com.stephenwoerner.dubvtransit2
+package com.stephenwoerner.dubvtransittwo
 
 import org.junit.Test
 

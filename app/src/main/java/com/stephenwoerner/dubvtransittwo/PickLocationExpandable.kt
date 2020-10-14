@@ -1,10 +1,10 @@
-package com.stephenwoerner.dubvtransit2
+package com.stephenwoerner.dubvtransittwo
 
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.SimpleExpandableListAdapter
-import com.stephenwoerner.dubvtransit2.PRTModel.Companion.get
+import com.stephenwoerner.dubvtransittwo.PRTModel.Companion.get
 import kotlinx.android.synthetic.main.expandable_list_view.*
 import java.util.*
 

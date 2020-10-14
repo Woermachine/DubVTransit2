@@ -1,4 +1,4 @@
-package com.stephenwoerner.dubvtransit2
+package com.stephenwoerner.dubvtransittwo
 
 import android.Manifest
 import android.app.Activity
