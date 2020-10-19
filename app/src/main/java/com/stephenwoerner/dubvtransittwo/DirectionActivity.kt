@@ -21,10 +21,11 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.google.maps.model.*
 import kotlinx.android.synthetic.main.display_layout.*
+import kotlinx.coroutines.*
 import timber.log.Timber
 import java.util.*
 
-class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener {
+class DirectionActivity : Activity(), LocationListener {
 
     enum class Route { CAR, BUS, WALK, PRT }
 
@@ -47,6 +48,9 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
     private var leavingTimeMillis : Long = 0L
     private var context = this@DirectionActivity
     private val model = PRTModel.get(context)
+
+    private val mapsDataClient = MapsDataClient()
+    private val callback = this
 
     private val location: LatLng
         get() {
@@ -114,7 +118,9 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
                 } else {
                     val courseDbAdapter = CourseDbAdapter().open(context)
                     val cursor = courseDbAdapter.fetchCourse(originStr)
-                    cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
+                    val og = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
+                    courseDbAdapter.close()
+                    og
                 }
                 model.allHashMap[lookupString]!!
             }
@@ -124,6 +130,7 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
             val courseDbAdapter = CourseDbAdapter().open(context)
             val cursor = courseDbAdapter.fetchCourse(destinationStr)
             destinationStr = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
+            courseDbAdapter.close()
         }
         destination = model.allHashMap[destinationStr]!!
         NavigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(R.drawable.ic_navigation_black_36dp).setMessage(R.string.alert_message).show() }
@@ -131,10 +138,26 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
         progress = ProgressBar(context)
         progress.isIndeterminate = true
         progress.visibility = View.VISIBLE
-        MapsAsyncTask().execute(leavingTimeMillis, origin, destination, useCurrentTime, context, this)
+
+        GlobalScope.launch(Dispatchers.IO) {
+
+            val results = mapsDataClient.execute(
+                leavingTimeMillis,
+                origin,
+                destination,
+                useCurrentTime,
+                context,
+                callback
+            )
+
+            runOnUiThread {
+                onResults(results)
+            }
+        }
     }
 
-    override fun onResults(mapsTaskResults: MapsAsyncTask.MapsTaskResults) {
+    private fun onResults(mapsTaskResults: MapsDataClient.MapsTaskResults) {
+
         progress.visibility = View.GONE
 
         busDirections = mapsTaskResults.busStepsAndDuration.directions

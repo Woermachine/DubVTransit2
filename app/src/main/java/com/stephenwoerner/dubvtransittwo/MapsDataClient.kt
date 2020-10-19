@@ -1,22 +1,18 @@
 package com.stephenwoerner.dubvtransittwo
 
 import android.content.Context
-import android.os.AsyncTask
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.model.*
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.async
 import org.joda.time.Instant
 import timber.log.Timber
 import java.util.*
 import kotlin.collections.ArrayList
 
-class MapsAsyncTask : AsyncTask<Any, Void?, Boolean?>() {
+class MapsDataClient {
 
-    interface DAListener {
-        fun onResults(mapsTaskResults: MapsTaskResults)
-    }
-
-    private lateinit var listener : DAListener
     private lateinit var context : Context
 
     private lateinit var origin : LatLng
@@ -37,13 +33,12 @@ class MapsAsyncTask : AsyncTask<Any, Void?, Boolean?>() {
     private lateinit var wSAD : StepsAndDuration
     private lateinit var pSAD : StepsAndDuration
 
-    override fun doInBackground(vararg params: Any?): Boolean? {
+    suspend fun execute(vararg params: Any?) : MapsTaskResults{
         leavingTime.timeInMillis = params[0] as Long
         origin = params[1] as LatLng
         destination = params[2] as LatLng
         useCurrentTime = params[3] as Boolean
         context = params[4] as Context
-        listener = params[5] as DAListener
         val model = PRTModel.get(context)
 
         // If leaving time is in the past, set to current time
@@ -60,26 +55,33 @@ class MapsAsyncTask : AsyncTask<Any, Void?, Boolean?>() {
         val geoContext = GeoApiContext().setApiKey(BuildConfig.MAPS_KEY)
         val instant = Instant(leavingTime.timeInMillis)
 
-        //Get Google Maps Travel Times
-        val carRequest = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant)
-        val busRequest = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).mode(TravelMode.TRANSIT).transitMode(TransitMode.BUS)
-        val walkingRequest = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).mode(TravelMode.WALKING)
-        val prtRequestA = DirectionsApi.newRequest(geoContext).origin(origin).destination(closestPRTAStr).departureTime(instant).mode(TravelMode.WALKING)
-        val prtRequestB = DirectionsApi.newRequest(geoContext).origin(closestPRTBStr).destination(destination).departureTime(instant).mode(TravelMode.WALKING)
-
-        try {
-            val carResult = carRequest.await()
-            val busResult = busRequest.await()
-            val walkingResult = walkingRequest.await()
-            val prtResultA = prtRequestA.await()
-            val prtResultB = prtRequestB.await()
-
+        val deferredCar = GlobalScope.async {
+            val carResult = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).await()
             cSAD = getStepsAndDuration(carResult)
+
+            "car"
+        }
+
+        val deferredBus = GlobalScope.async {
+            val busResult = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).mode(TravelMode.TRANSIT).transitMode(TransitMode.BUS).await()
             bSAD = getStepsAndDuration(busResult)
+
+           "bus"
+        }
+
+        val deferredWalk = GlobalScope.async {
+            val walkingResult = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).mode(TravelMode.WALKING).await()
             wSAD = getStepsAndDuration(walkingResult)
+            "prt"
+        }
+
+       val deferredPrt = GlobalScope.async {
+            val prtResultA = DirectionsApi.newRequest(geoContext).origin(origin).destination(closestPRTAStr).departureTime(instant).mode(TravelMode.WALKING).await()
+            val prtResultB = DirectionsApi.newRequest(geoContext).origin(closestPRTBStr).destination(destination).departureTime(instant).mode(TravelMode.WALKING).await()
 
             val pSADA = getStepsAndDuration(prtResultA)
             val pSADB = getStepsAndDuration(prtResultB)
+
 
             var prtDuration = pSADA.duration
             prtDuration += model.estimateTime(closestPRTA, closestPRTB, leavingTime).toInt()
@@ -90,38 +92,39 @@ class MapsAsyncTask : AsyncTask<Any, Void?, Boolean?>() {
             pSAD.directions.addAll(pSADA.directions)
             pSAD.directions.add("Ride Prt from $closestPRTA to $closestPRTB")
             pSAD.directions.addAll(pSADB.directions)
-
-            var fastest = cSAD.duration
-            fastestRoute = DirectionActivity.Route.CAR
-
-            if (bSAD.duration < fastest) {
-                fastest = bSAD.duration
-                fastestRoute = DirectionActivity.Route.BUS
-            }
-            if (wSAD.duration < fastest) {
-                fastest = wSAD.duration
-                fastestRoute = DirectionActivity.Route.WALK
-            }
-            if (prtDuration < fastest) {
-                fastestRoute = DirectionActivity.Route.PRT
-            }
-
-        } catch (e: Exception) {
-            Timber.e(e)
+            "prt"
         }
 
 
-        return true
-    }
+        Timber.d("%s%s%s%s", deferredCar.await(), deferredBus.await(), deferredWalk.await(), deferredPrt.await())
 
-    override fun onPostExecute(result: Boolean?) {
-        val mapsTaskResults = MapsTaskResults(carStepsAndDuration = cSAD, busStepsAndDuration = bSAD,
-                walkStepsAndDuration = wSAD, prtStepsAndDuration = pSAD, fastestRoute = fastestRoute,
-                closestPRTA = closestPRTA, closestPRTB = closestPRTB, leavingTime = leavingTime)
-        listener.onResults(mapsTaskResults)
-    }
 
-    override fun onProgressUpdate(vararg values: Void?) {}
+        var fastest = cSAD.duration
+        fastestRoute = DirectionActivity.Route.CAR
+
+        if (bSAD.duration < fastest) {
+            fastest = bSAD.duration
+            fastestRoute = DirectionActivity.Route.BUS
+        }
+        if (wSAD.duration < fastest) {
+            fastest = wSAD.duration
+            fastestRoute = DirectionActivity.Route.WALK
+        }
+        if (pSAD.duration < fastest) {
+            fastestRoute = DirectionActivity.Route.PRT
+        }
+
+        return MapsTaskResults(
+            carStepsAndDuration = cSAD,
+            busStepsAndDuration = bSAD,
+            walkStepsAndDuration = wSAD,
+            prtStepsAndDuration = pSAD,
+            fastestRoute = fastestRoute,
+            closestPRTA = closestPRTA,
+            closestPRTB = closestPRTB,
+            leavingTime = leavingTime
+        )
+    }
 
     private fun formatInstruct(step : DirectionsStep) : String {
         return  """${step.htmlInstructions.replace("<[^>]*>".toRegex(), "")}${step.distance}""".trimIndent()
