@@ -145,9 +145,7 @@ class DirectionActivity : Activity(), LocationListener {
                 leavingTimeMillis,
                 origin,
                 destination,
-                useCurrentTime,
                 context,
-                callback
             )
 
             runOnUiThread {

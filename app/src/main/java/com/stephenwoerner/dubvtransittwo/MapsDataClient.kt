@@ -13,32 +13,15 @@ import kotlin.collections.ArrayList
 
 class MapsDataClient {
 
-    private lateinit var context : Context
-
-    private lateinit var origin : LatLng
-    private lateinit var destination : LatLng
-
     private var leavingTime = Calendar.getInstance()
-
-    private lateinit var closestPRTA: String
-    private lateinit var closestPRTB: String
-
-    private var fastestRoute = DirectionActivity.Route.CAR
-
-    private var useCurrentTime = true
-
 
     private lateinit var cSAD : StepsAndDuration
     private lateinit var bSAD : StepsAndDuration
     private lateinit var wSAD : StepsAndDuration
     private lateinit var pSAD : StepsAndDuration
 
-    suspend fun execute(vararg params: Any?) : MapsTaskResults{
-        leavingTime.timeInMillis = params[0] as Long
-        origin = params[1] as LatLng
-        destination = params[2] as LatLng
-        useCurrentTime = params[3] as Boolean
-        context = params[4] as Context
+    suspend fun execute(leavingTimeMillis : Long, origin : LatLng, destination : LatLng, context: Context ) : MapsTaskResults{
+        leavingTime.timeInMillis = leavingTimeMillis
         val model = PRTModel.get(context)
 
         // If leaving time is in the past, set to current time
@@ -46,8 +29,8 @@ class MapsDataClient {
         if (leavingTime.timeInMillis < currTime.timeInMillis)
             leavingTime.timeInMillis = currTime.timeInMillis
 
-        closestPRTA = model.findClosestPRT(origin)
-        closestPRTB = model.findClosestPRT(destination)
+        val closestPRTA = model.findClosestPRT(origin)
+        val closestPRTB = model.findClosestPRT(destination)
 
         val closestPRTAStr = model.allHashMap[closestPRTA]
         val closestPRTBStr = model.allHashMap[closestPRTB]
@@ -100,7 +83,7 @@ class MapsDataClient {
 
 
         var fastest = cSAD.duration
-        fastestRoute = DirectionActivity.Route.CAR
+        var fastestRoute = DirectionActivity.Route.CAR
 
         if (bSAD.duration < fastest) {
             fastest = bSAD.duration
