@@ -2,10 +2,11 @@ package com.stephenwoerner.dubvtransittwo
 
 import com.google.gson.Gson
 import com.google.maps.model.LatLng
+import com.soywiz.klock.DateTime
+import com.soywiz.klock.DayOfWeek
 import io.ktor.client.*
 import io.ktor.client.features.json.*
 import io.ktor.client.request.*
-import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.math.pow
@@ -42,15 +43,14 @@ class PRTModel private constructor() {
 
     fun estimateTime(prtStationA: String, prtStationB: String, timeInMillis: Long): Double {
 
-        val calendar = Calendar.getInstance()
-        calendar.timeInMillis = timeInMillis
+        val dateTime = DateTime.fromUnix(timeInMillis)
         //Wait Time
         if (prtStationA == prtStationB) return 0.0
         var time = 3.0
-        when (calendar[Calendar.DAY_OF_WEEK]) {
-            Calendar.MONDAY, Calendar.WEDNESDAY, Calendar.FRIDAY -> if (calendar[Calendar.MINUTE] > 45 || calendar[Calendar.MINUTE] < 5) time += 7.0
-            Calendar.TUESDAY, Calendar.THURSDAY -> if (calendar[Calendar.MINUTE] > 40 && calendar[Calendar.HOUR_OF_DAY] < 55) time += 7.0
-            Calendar.SATURDAY -> time += 2.0
+        when (dateTime.dayOfWeek) {
+            DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday -> if (dateTime.minutes > 45 || dateTime.minutes < 5) time += 7.0
+            DayOfWeek.Tuesday, DayOfWeek.Thursday -> if (dateTime.minutes > 40 && dateTime.hours < 55) time += 7.0
+            DayOfWeek.Saturday -> time += 2.0
         }
         //Average TravelTime
         //Implement traveltime between stations
@@ -86,21 +86,20 @@ class PRTModel private constructor() {
 
     fun isOpen(departingTimeInMillis: Long): Boolean {
 
-        val departingTime = Calendar.getInstance()
-        departingTime.timeInMillis = departingTimeInMillis
+        val departingTime = DateTime.fromUnix(departingTimeInMillis)
 
-        println( "${DirectionActivity::class.simpleName} Open at calendar time ${departingTime.get(Calendar.HOUR)}:${departingTime.get(Calendar.MINUTE)}")
-        return when (departingTime.get(Calendar.DAY_OF_WEEK)) {
-            Calendar.SUNDAY -> false
-            Calendar.SATURDAY -> {
-                val hourOfDay = departingTime.get(Calendar.HOUR_OF_DAY)
-                val min = departingTime.get(Calendar.MINUTE)
+        println( "${DirectionActivity::class.simpleName} Open at calendar time ${departingTime.hours}:${departingTime.minutes}")
+        return when (departingTime.dayOfWeek) {
+            DayOfWeek.Sunday -> false
+            DayOfWeek.Saturday -> {
+                val hourOfDay = departingTime.hours
+                val min = departingTime.minutes
 
                 hourOfDay in 9..17 || (hourOfDay == 8 && min > 30)
             }
             else -> {
-                val hourOfDay = departingTime.get(Calendar.HOUR_OF_DAY)
-                val min = departingTime.get(Calendar.MINUTE)
+                val hourOfDay = departingTime.hours
+                val min = departingTime.minutes
 
                 hourOfDay in 6..22 || (hourOfDay == 5 && min > 30)
             }
@@ -109,7 +108,7 @@ class PRTModel private constructor() {
 
 
     suspend fun requestPRTStatus(): Boolean {
-        val unixTime = Calendar.getInstance().timeInMillis
+        val unixTime = DateTime.nowUnixLong()
         if (unixTime - lastPRTRequestTime < 30000)  //1 min
             return false
 
