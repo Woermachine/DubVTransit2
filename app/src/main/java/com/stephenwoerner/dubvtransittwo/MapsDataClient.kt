@@ -1,6 +1,5 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.content.Context
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.model.*
@@ -13,21 +12,19 @@ import kotlin.collections.ArrayList
 
 class MapsDataClient {
 
-    private var leavingTime = Calendar.getInstance()
-
     private lateinit var cSAD : StepsAndDuration
     private lateinit var bSAD : StepsAndDuration
     private lateinit var wSAD : StepsAndDuration
     private lateinit var pSAD : StepsAndDuration
 
-    suspend fun execute(leavingTimeMillis : Long, origin : LatLng, destination : LatLng, context: Context ) : MapsTaskResults{
-        leavingTime.timeInMillis = leavingTimeMillis
-        val model = PRTModel.get(context)
+    suspend fun execute(leavingTimeMillis : Long, origin : LatLng, destination : LatLng) : MapsTaskResults{
+        val model = PRTModel.get()
+        var leavingTime = leavingTimeMillis
 
         // If leaving time is in the past, set to current time
         val currTime = Calendar.getInstance()
-        if (leavingTime.timeInMillis < currTime.timeInMillis)
-            leavingTime.timeInMillis = currTime.timeInMillis
+        if (leavingTime < currTime.timeInMillis)
+            leavingTime = currTime.timeInMillis
 
         val closestPRTA = model.findClosestPRT(origin)
         val closestPRTB = model.findClosestPRT(destination)
@@ -36,7 +33,7 @@ class MapsDataClient {
         val closestPRTBStr = model.allHashMap[closestPRTB]
 
         val geoContext = GeoApiContext().setApiKey(BuildConfig.MAPS_KEY)
-        val instant = Instant(leavingTime.timeInMillis)
+        val instant = Instant(leavingTime)
 
         val deferredCar = GlobalScope.async {
             val carResult = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).await()
@@ -135,6 +132,6 @@ class MapsDataClient {
     data class MapsTaskResults(val carStepsAndDuration: StepsAndDuration, val busStepsAndDuration: StepsAndDuration,
                                val walkStepsAndDuration: StepsAndDuration, val prtStepsAndDuration: StepsAndDuration,
                                val fastestRoute : DirectionActivity.Route, val closestPRTA : String,
-                               val closestPRTB : String, val leavingTime : Calendar)
+                               val closestPRTB : String, val leavingTime : Long)
 
 }

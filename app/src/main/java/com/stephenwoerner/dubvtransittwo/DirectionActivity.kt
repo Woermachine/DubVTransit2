@@ -37,7 +37,7 @@ class DirectionActivity : Activity(), LocationListener {
     private lateinit var origin : LatLng
     private lateinit var destination : LatLng
 
-    private lateinit var leavingTime : Calendar
+    private var leavingTime = 0L
 
     private lateinit var locationManager : LocationManager
 
@@ -47,10 +47,9 @@ class DirectionActivity : Activity(), LocationListener {
     private lateinit var prtDirections : ArrayList<String>
     private var leavingTimeMillis : Long = 0L
     private var context = this@DirectionActivity
-    private val model = PRTModel.get(context)
+    private val model = PRTModel.get()
 
     private val mapsDataClient = MapsDataClient()
-    private val callback = this
 
     private val location: LatLng
         get() {
@@ -108,8 +107,6 @@ class DirectionActivity : Activity(), LocationListener {
         val displayDestination = "To: $destinationStr"
         destination_location.text = displayDestination
 
-        model.requestPRTStatus()
-
         origin = when (originStr) {
             getString(R.string.current_location) -> location
             else -> {
@@ -139,13 +136,12 @@ class DirectionActivity : Activity(), LocationListener {
         progress.isIndeterminate = true
         progress.visibility = View.VISIBLE
 
-        GlobalScope.launch(Dispatchers.IO) {
-
+        CoroutineScope(Dispatchers.IO).launch {
+            model.requestPRTStatus()
             val results = mapsDataClient.execute(
                 leavingTimeMillis,
                 origin,
-                destination,
-                context,
+                destination
             )
 
             runOnUiThread {

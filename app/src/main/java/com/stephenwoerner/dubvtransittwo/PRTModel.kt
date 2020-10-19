@@ -1,19 +1,19 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.content.Context
-import com.android.volley.*
-import com.android.volley.toolbox.*
+import com.google.gson.Gson
 import com.google.maps.model.LatLng
-import org.json.JSONException
-import timber.log.Timber
+import io.ktor.client.*
+import io.ktor.client.features.json.*
+import io.ktor.client.request.*
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.collections.HashMap
 import kotlin.math.pow
 
-internal class PRTModel private constructor(private val context: Context) {
-    private var mRequestQueue: RequestQueue?
+class PRTModel private constructor() {
     var status = "0"
     var message = ""
-    private var duration = ""
+    private lateinit var duration : Array<String>
     private var busesDispatched = ""
 
     private lateinit var stations: Array<String>
@@ -23,14 +23,14 @@ internal class PRTModel private constructor(private val context: Context) {
     lateinit var buildingHashMap: HashMap<String, LatLng>
     lateinit var dormHashMap: HashMap<String, LatLng>
     lateinit var allHashMap: HashMap<String, LatLng>
-    private var lastPRTRequestTime = Calendar.getInstance()
+    private var lastPRTRequestTime = 0L
 
     companion object {
         private lateinit var model: PRTModel
         @JvmStatic
-        fun get(context: Context): PRTModel {
+        fun get(): PRTModel {
             if (!::model.isInitialized) {
-                model = PRTModel(context)
+                model = PRTModel()
             }
             return model
         }
@@ -38,11 +38,12 @@ internal class PRTModel private constructor(private val context: Context) {
 
     init {
         initializeHashMaps()
-        mRequestQueue = requestQueue
-        lastPRTRequestTime[0, 0] = 0
     }
 
-    fun estimateTime(prtStationA: String, prtStationB: String, calendar: Calendar): Double {
+    fun estimateTime(prtStationA: String, prtStationB: String, timeInMillis: Long): Double {
+
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = timeInMillis
         //Wait Time
         if (prtStationA == prtStationB) return 0.0
         var time = 3.0
@@ -74,16 +75,19 @@ internal class PRTModel private constructor(private val context: Context) {
         return time
     }
 
-    fun openAtCalendarTime(calendar: Calendar): Boolean {
-        Timber.d("Open at calendar time ${calendar[Calendar.HOUR_OF_DAY]}:${calendar[Calendar.MINUTE]}")
-        when (calendar[Calendar.DAY_OF_WEEK]) {
-            Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY -> if (calendar[Calendar.HOUR_OF_DAY] < 22 && (calendar[Calendar.HOUR_OF_DAY] > 6 || calendar[Calendar.HOUR_OF_DAY] > 5 && calendar[Calendar.MINUTE] > 30)) return true
-            Calendar.SATURDAY -> if (calendar[Calendar.HOUR_OF_DAY] < 17 && (calendar[Calendar.HOUR_OF_DAY] > 9 || calendar[Calendar.HOUR_OF_DAY] > 8 && calendar[Calendar.MINUTE] > 30)) return true
-        }
-        return false
-    }
+//    fun openAtCalendarTime(calendar: Calendar): Boolean {
+//        Timber.d("Open at calendar time ${calendar[Calendar.HOUR_OF_DAY]}:${calendar[Calendar.MINUTE]}")
+//        when (calendar[Calendar.DAY_OF_WEEK]) {
+//            Calendar.MONDAY, Calendar.TUESDAY, Calendar.WEDNESDAY, Calendar.THURSDAY, Calendar.FRIDAY -> if (calendar[Calendar.HOUR_OF_DAY] < 22 && (calendar[Calendar.HOUR_OF_DAY] > 6 || calendar[Calendar.HOUR_OF_DAY] > 5 && calendar[Calendar.MINUTE] > 30)) return true
+//            Calendar.SATURDAY -> if (calendar[Calendar.HOUR_OF_DAY] < 17 && (calendar[Calendar.HOUR_OF_DAY] > 9 || calendar[Calendar.HOUR_OF_DAY] > 8 && calendar[Calendar.MINUTE] > 30)) return true
+//        }
+//        return false
+//    }
 
-    fun isOpen(departingTime: Calendar): Boolean {
+    fun isOpen(departingTimeInMillis: Long): Boolean {
+
+        val departingTime = Calendar.getInstance()
+        departingTime.timeInMillis = departingTimeInMillis
 
         println( "${DirectionActivity::class.simpleName} Open at calendar time ${departingTime.get(Calendar.HOUR)}:${departingTime.get(Calendar.MINUTE)}")
         return when (departingTime.get(Calendar.DAY_OF_WEEK)) {
@@ -103,47 +107,34 @@ internal class PRTModel private constructor(private val context: Context) {
         }
     }
 
-    private val requestQueue: RequestQueue?
-        get() {
-            if (mRequestQueue == null) {
-                mRequestQueue = Volley.newRequestQueue(context.applicationContext)
-            }
-            return mRequestQueue
-        }
 
-
-    fun requestPRTStatus(): Boolean {
+    suspend fun requestPRTStatus(): Boolean {
         val unixTime = Calendar.getInstance().timeInMillis
-        if (unixTime - lastPRTRequestTime.timeInMillis < 30000) { //1 min
+        if (unixTime - lastPRTRequestTime < 30000)  //1 min
             return false
-        }
-        val mRequestQueue: RequestQueue
-        val cache: Cache = DiskBasedCache(context.cacheDir, 1024 * 1024)
-        val network: Network = BasicNetwork(HurlStack())
-        mRequestQueue = RequestQueue(cache, network)
-        mRequestQueue.start()
+
         val url = "https://prtstatus.wvu.edu/api/$unixTime/?format=json"
-        val jsObjRequest = JsonObjectRequest(Request.Method.GET, url, null, { response ->
-            try {
-                status = response.getString("status")
-                message = response.getString("message")
-                stations = response.getString("stations").split(",").toTypedArray()
-                busesDispatched = response.getString("bussesDispatched")
-                duration = response.getString("duration")
-                Timber.d(model.status)
-                Timber.d(model.message)
-                Timber.d(model.duration)
-                Timber.d(model.busesDispatched)
-            } catch (e: JSONException) {
-                Timber.d(e)
+        val client = HttpClient {
+            install(JsonFeature) {
+                serializer = GsonSerializer()
             }
-        }, { error ->
-            Timber.d(error)
-        })
-        requestQueue!!.add(jsObjRequest)
-        lastPRTRequestTime = Calendar.getInstance()
+        }
+        val response = client.get<String>(url)
+        val prtResponse = Gson().fromJson(response, PRTResponse::class.java)
+        client.close()
+        status = prtResponse.status
+        duration = prtResponse.duration
+        message = prtResponse.message
+        stations = prtResponse.stations
+        busesDispatched = prtResponse.bussesDispatched
+        lastPRTRequestTime = unixTime
         return true
     }
+
+    data class PRTResponse(var status : String, var message : String, var timestamp : String,
+                           var stations : Array<String>, var bussesDispatched : String,
+                           var duration : Array<String>)
+
 
     /**
      * Returns where the PRT is open between stations

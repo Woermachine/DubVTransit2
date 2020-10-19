@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.SimpleExpandableListAdapter
-import com.stephenwoerner.dubvtransittwo.PRTModel.Companion.get
 import kotlinx.android.synthetic.main.expandable_list_view.*
 import java.util.*
 
@@ -37,7 +36,7 @@ class PickLocationExpandable : Activity() {
             childItems = childItemsB
         }
 //        simpleExpandableListView = findViewById(R.id.expandable_list)
-        val prtModel = get(applicationContext)
+        val prtModel = PRTModel.get()
         val prtStrings = ArrayList(prtModel.prtHashMap.keys)
         prtStrings.sort()
         //childItems[0] = prtStrings.toArray(new String[prtStrings.size()]);

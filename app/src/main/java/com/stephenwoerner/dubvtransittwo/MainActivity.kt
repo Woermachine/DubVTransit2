@@ -15,6 +15,9 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers.IO
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
@@ -36,8 +39,10 @@ class MainActivity : Activity() {
         //initialize
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        model = PRTModel.get(applicationContext)
-        model.requestPRTStatus()
+        model = PRTModel.get()
+        CoroutineScope(IO).launch {
+            model.requestPRTStatus()
+        }
         destView.setOnClickListener { showLocationList(it) }
         startView.setOnClickListener { showLocationList(it) }
         leavingTime = Calendar.getInstance()
@@ -55,12 +60,15 @@ class MainActivity : Activity() {
             }
         }
         prt_status.setOnClickListener {
-            if (model.requestPRTStatus()) Toast.makeText(
-                applicationContext,
-                "You can only update the status once every 30 seconds\nLong press to see full prt status",
-                Toast.LENGTH_LONG
-            ).show()
-            prtButtonColor()
+            CoroutineScope(IO).launch {
+                if (model.requestPRTStatus())
+                    Toast.makeText(
+                        applicationContext,
+                        "You can only update the status once every 30 seconds\nLong press to see full prt status",
+                        Toast.LENGTH_LONG
+                    ).show()
+                prtButtonColor()
+            }
         }
         prt_status.setOnLongClickListener {
             showPRTDialog()
@@ -144,7 +152,7 @@ class MainActivity : Activity() {
      */
     fun showDatePickerDialog(v: View?) {
         Timber.d("building date picker dialog")
-        val listener = OnDateSetListener { dp, year, month, dayOfMonth ->
+        val listener = OnDateSetListener { _, year, month, dayOfMonth ->
             leavingTime[Calendar.YEAR] = year
             leavingTime[Calendar.MONTH] = month
             leavingTime[Calendar.DAY_OF_MONTH] = dayOfMonth
