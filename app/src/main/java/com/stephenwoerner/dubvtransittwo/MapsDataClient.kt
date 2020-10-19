@@ -3,11 +3,11 @@ package com.stephenwoerner.dubvtransittwo
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.model.*
+import com.soywiz.klock.DateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import org.joda.time.Instant
 import timber.log.Timber
-import java.util.*
 import kotlin.collections.ArrayList
 
 class MapsDataClient {
@@ -22,9 +22,9 @@ class MapsDataClient {
         var leavingTime = leavingTimeMillis
 
         // If leaving time is in the past, set to current time
-        val currTime = Calendar.getInstance()
-        if (leavingTime < currTime.timeInMillis)
-            leavingTime = currTime.timeInMillis
+        val currTime = DateTime.nowUnixLong()
+        if (leavingTime < currTime)
+            leavingTime = currTime
 
         val closestPRTA = model.findClosestPRT(origin)
         val closestPRTB = model.findClosestPRT(destination)
