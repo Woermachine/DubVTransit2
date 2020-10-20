@@ -17,7 +17,7 @@ class MapsDataClient {
     private lateinit var wSAD : StepsAndDuration
     private lateinit var pSAD : StepsAndDuration
 
-    suspend fun execute(leavingTimeMillis : Long, origin : LatLng, destination : LatLng) : MapsTaskResults{
+    suspend fun execute(leavingTimeMillis : Long, origin : LatLng, destination : LatLng) : MapsTaskResults {
         val model = PRTModel.get()
         var leavingTime = leavingTimeMillis
 

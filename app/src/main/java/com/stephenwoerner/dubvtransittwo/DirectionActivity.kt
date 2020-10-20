@@ -130,7 +130,7 @@ class DirectionActivity : Activity(), LocationListener {
             courseDbAdapter.close()
         }
         destination = model.allHashMap[destinationStr]!!
-        NavigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(R.drawable.ic_navigation_black_36dp).setMessage(R.string.alert_message).show() }
+        navigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(R.drawable.ic_navigation_black_36dp).setMessage(R.string.alert_message).show() }
 
         progress = ProgressBar(context)
         progress.isIndeterminate = true
@@ -184,25 +184,25 @@ class DirectionActivity : Activity(), LocationListener {
         val prtButtonText = "${ mapsTaskResults.prtStepsAndDuration.duration / 60} min"
         val carButtonText = "${ mapsTaskResults.carStepsAndDuration.duration / 60} min"
 
-        BusButton.text = busButtonText
-        WalkButton.text = walkingButtonText
-        PRTButton.text = prtButtonText
-        CarButton.text = carButtonText
+        busButton.text = busButtonText
+        walkButton.text = walkingButtonText
+        prtButton.text = prtButtonText
+        carButton.text = carButtonText
         list2.adapter = directionsStepArrayAdapter
-        PRTBadge.background = prtButtonColor()
+        prtBadge.background = prtButtonColor()
 
         when (mapsTaskResults.fastestRoute) {
             Route.CAR -> {
-                CarButton.background = btnSelectColor
+                carButton.background = btnSelectColor
             }
             Route.BUS -> {
-                BusButton.background = btnSelectColor
+                busButton.background = btnSelectColor
             }
             Route.WALK -> {
-                WalkButton.background = btnSelectColor
+                walkButton.background = btnSelectColor
             }
             Route.PRT -> {
-                PRTButton.background = btnSelectColor
+                prtButton.background = btnSelectColor
             }
         }
     }
@@ -213,27 +213,27 @@ class DirectionActivity : Activity(), LocationListener {
      */
     fun changeSelected(v: View) {
         val unselected = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonUnselected))
-        CarButton.background = unselected
-        PRTButton.background = unselected
-        WalkButton.background = unselected
-        BusButton.background = unselected
+        carButton.background = unselected
+        prtButton.background = unselected
+        walkButton.background = unselected
+        busButton.background = unselected
 
         val selectedColor = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonSelected))
         list2.adapter = when (v.id) {
-            R.id.BusButton -> {
-                PRTButton.background = selectedColor
+            R.id.busButton -> {
+                prtButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, busDirections)
             }
-            R.id.WalkButton -> {
-                WalkButton.background = selectedColor
+            R.id.walkButton -> {
+                walkButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, walkingDirections)
             }
-            R.id.PRTButton -> {
-                PRTButton.background = selectedColor
+            R.id.prtButton -> {
+                prtButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, prtDirections)
             }
             else -> { // Assume Car
-                CarButton.background = selectedColor
+                carButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, carDirections)
             }
         }

@@ -22,20 +22,21 @@ class EditCourse : Activity() {
         val isNew = intent.getBooleanExtra("isNew", true)
         courseDbAdapter = CourseDbAdapter().open(applicationContext)
         val doneFab: FloatingActionButton = findViewById(R.id.done_button)
-//        editableCourseTitle = findViewById(R.id.editable_course_title)
-//        locationButton = findViewById(R.id.startView)
-//        editNote = findViewById(R.id.course_note)
+
         doneFab.setOnClickListener(object : View.OnClickListener {
             override fun onClick(view: View) {
                 run {
                     if (isNew)
-                        courseDbAdapter.createCourse(editable_course_title.text.toString(), startView.text.toString(), course_note.text.toString())
+                        courseDbAdapter.createCourse(editable_course_title.text.toString(), startBtn.text.toString(), course_note.text.toString())
                     else
-                        courseDbAdapter.updateCourse(rowId, editable_course_title.text.toString(), startView.text.toString(), course_note.text.toString())
+                        courseDbAdapter.updateCourse(rowId, editable_course_title.text.toString(), startBtn.text.toString(), course_note.text.toString())
                     finish()
                 }
             }
         })
+        startBtn.setOnClickListener {
+            showLocationList()
+        }
         if (!isNew) fillData()
     }
 
@@ -46,12 +47,12 @@ class EditCourse : Activity() {
         if (cursor.count == 1) {
             rowId = cursor.getLong(cursor.getColumnIndex(CourseDbAdapter.KEY_ROWID))
             editable_course_title.setText(cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_COURSE)))
-            startView.text = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
+            startBtn.text = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
             course_note.setText(cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_NOTE)))
         }
     }
 
-    fun showLocationList(v: View?) {
+    private fun showLocationList() {
         val intent = Intent(this, PickLocationExpandable::class.java)
         intent.putExtra("useCourses", false)
         val requestCode = 2
@@ -62,7 +63,7 @@ class EditCourse : Activity() {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == 2) {
             if (resultCode == RESULT_OK) {
-                startView.text = data.getStringExtra("selected")
+                startBtn.text = data.getStringExtra("selected")
             }
         }
     }

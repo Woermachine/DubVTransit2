@@ -43,23 +43,23 @@ class MainActivity : Activity() {
         CoroutineScope(IO).launch {
             model.requestPRTStatus()
         }
-        destView.setOnClickListener { showLocationList(it) }
-        startView.setOnClickListener { showLocationList(it) }
+        destBtn.setOnClickListener { showLocationList(it) }
+        startBtn.setOnClickListener { showLocationList(it) }
         leavingTime = Calendar.getInstance()
-        timeButton.text = timeFormat.format(leavingTime.time)
-        dateButton.text = dateFormat.format(leavingTime.time)
-        use_current_time.setOnClickListener {
-            if (use_current_time.isChecked) {
+        timeBtn.text = timeFormat.format(leavingTime.time)
+        dateBtn.text = dateFormat.format(leavingTime.time)
+        useCurrentTimeCB.setOnClickListener {
+            if (useCurrentTimeCB.isChecked) {
                 useCurrentTime = true
-                timeButton.visibility = View.GONE
-                dateButton.visibility = View.GONE
+                timeBtn.visibility = View.GONE
+                dateBtn.visibility = View.GONE
             } else {
                 useCurrentTime = false
-                timeButton.visibility = View.VISIBLE
-                dateButton.visibility = View.VISIBLE
+                timeBtn.visibility = View.VISIBLE
+                dateBtn.visibility = View.VISIBLE
             }
         }
-        prt_status.setOnClickListener {
+        prtStatusBtn.setOnClickListener {
             CoroutineScope(IO).launch {
                 if (model.requestPRTStatus())
                     Toast.makeText(
@@ -70,9 +70,27 @@ class MainActivity : Activity() {
                 prtButtonColor()
             }
         }
-        prt_status.setOnLongClickListener {
+        prtStatusBtn.setOnLongClickListener {
             showPRTDialog()
             true
+        }
+        continueBtn.setOnClickListener {
+            launchDirectionActivity()
+        }
+        courseBtn.setOnClickListener {
+            launchCourseList()
+        }
+        dateBtn.setOnClickListener {
+            showDatePickerDialog()
+        }
+        destBtn.setOnClickListener {
+            showLocationList(it)
+        }
+        startBtn.setOnClickListener {
+            showLocationList(it)
+        }
+        timeBtn.setOnClickListener {
+            showTimePickerDialog()
         }
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -85,14 +103,14 @@ class MainActivity : Activity() {
                 1
             )
         }
-        if (use_current_time.isChecked) {
+        if (useCurrentTimeCB.isChecked) {
             useCurrentTime = true
-            timeButton.visibility = View.GONE
-            dateButton.visibility = View.GONE
+            timeBtn.visibility = View.GONE
+            dateBtn.visibility = View.GONE
         } else {
             useCurrentTime = false
-            timeButton.visibility = View.VISIBLE
-            dateButton.visibility = View.VISIBLE
+            timeBtn.visibility = View.VISIBLE
+            dateBtn.visibility = View.VISIBLE
         }
         prtButtonColor()
         Timber.d("setup complete")
@@ -104,7 +122,7 @@ class MainActivity : Activity() {
      * @param v button
      */
     fun showLocationList(v: View) {
-        val requestCode = if(v.id == R.id.destView) 0 else 1
+        val requestCode = if(v.id == R.id.destBtn) 0 else 1
         val intent = Intent(this, PickLocationExpandable::class.java)
         startActivityForResult(intent, requestCode)
     }
@@ -114,23 +132,21 @@ class MainActivity : Activity() {
         if (resultCode == RESULT_OK) {
             val selected = data!!.getStringExtra("selected")
             when (requestCode) {
-                0 ->  destView.text = selected
-                1 ->  startView.text = selected
+                0 ->  destBtn.text = selected
+                1 ->  startBtn.text = selected
             }
         }
     }
 
     /**
      * Reveals a time picker dialog
-     *
-     * @param v the button
      */
-    fun showTimePickerDialog( v: View?) {
+    private fun showTimePickerDialog() {
         Timber.d("building time picker dialog")
         val listener = OnTimeSetListener { _, hourOfDay, minute ->
             leavingTime[Calendar.HOUR_OF_DAY] = hourOfDay
             leavingTime[Calendar.MINUTE] = minute
-            timeButton.text = timeFormat.format(leavingTime.time)
+            timeBtn.text = timeFormat.format(leavingTime.time)
         }
         val timePickerDialog = TimePickerDialog(
             this,
@@ -148,15 +164,14 @@ class MainActivity : Activity() {
     /**
      * Reveals a date picker dialog
      *
-     * @param v the button
      */
-    fun showDatePickerDialog(v: View?) {
+    private fun showDatePickerDialog() {
         Timber.d("building date picker dialog")
         val listener = OnDateSetListener { _, year, month, dayOfMonth ->
             leavingTime[Calendar.YEAR] = year
             leavingTime[Calendar.MONTH] = month
             leavingTime[Calendar.DAY_OF_MONTH] = dayOfMonth
-            dateButton!!.text = dateFormat.format(leavingTime.time)
+            dateBtn!!.text = dateFormat.format(leavingTime.time)
         }
         val datePickerDialog = DatePickerDialog(
             this,
@@ -171,40 +186,23 @@ class MainActivity : Activity() {
     }
 
     /**
-     * Called by the continueButton. If its the first time opening the app or is been more than 2 mins since the last ad, it shows the user a new interstitial ad
-     *
-     * @param v R.id.continueButton from R.layout.activity_main
-     */
-    fun launchDirectionActivity(v: View?) {
-        launchDirectionActivity()
-    }
-
-    /**
-     * Called by the continueButton. If its the first time opening the app or is been more than 2 mins since the last ad, it shows the user a new interstitial ad
-     *
-     */
-    fun launchCourseList(v: View?) {
-        launchCourseList()
-    }
-
-    /**
      * Sends information to a new instance of DirectionActivity via an intent
      */
     private fun launchDirectionActivity() {
-        if (destView.text.toString().compareTo("Destination", true) == 0) {
+        if (destBtn.text.toString().compareTo("Destination", true) == 0) {
             Timber.d("Failed to launch, no destination selected")
             Toast.makeText(this, "Must specify a destination", Toast.LENGTH_LONG).show()
             return
         }
-        if (destView.text.toString().compareTo("Current Location", true) == 0) {
+        if (destBtn.text.toString().compareTo("Current Location", true) == 0) {
             Timber.d("Failed to launch, current location is not a valid destination")
             Toast.makeText(this, "Current Location is not a valid destination", Toast.LENGTH_LONG)
                 .show()
             return
         }
         val intent = Intent(this, DirectionActivity::class.java)
-        intent.putExtra("origin", startView.text)
-        intent.putExtra("destination", destView.text)
+        intent.putExtra("origin", startBtn.text)
+        intent.putExtra("destination", destBtn.text)
         intent.putExtra("leavingTime", leavingTime.timeInMillis)
         intent.putExtra("useCurrentTime", useCurrentTime)
         Timber.d("Launching direction activity")

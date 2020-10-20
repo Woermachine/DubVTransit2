@@ -179,6 +179,8 @@ class CourseDbAdapter {
              */
             private const val DATABASE_CREATE = ("create table courses (" + KEY_ROWID + " integer primary key autoincrement, "
                     + KEY_COURSE + " text not null, " + KEY_LOCATION + " text not null, " + KEY_NOTE + " text not null);")
+
+            // CREATE TABLE COURSES (_id INTEGER PRIMARY KEY AUTOINCREMENT course TEXT NOT NULL, location TEXT NOT NULL, note TEXT NOT NULL);
             private const val DATABASE_NAME = "data"
             private const val DATABASE_TABLE = "courses"
             private const val DATABASE_VERSION = 1
