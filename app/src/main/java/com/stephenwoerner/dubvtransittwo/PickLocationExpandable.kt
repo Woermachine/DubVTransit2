@@ -5,7 +5,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.SimpleExpandableListAdapter
 import kotlinx.android.synthetic.main.expandable_list_view.*
-import java.util.*
 
 /**
  * Control interface to pick locations

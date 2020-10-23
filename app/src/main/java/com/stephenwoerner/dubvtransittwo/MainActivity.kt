@@ -121,7 +121,7 @@ class MainActivity : Activity() {
      *
      * @param v button
      */
-    fun showLocationList(v: View) {
+    private fun showLocationList(v: View) {
         val requestCode = if(v.id == R.id.destBtn) 0 else 1
         val intent = Intent(this, PickLocationExpandable::class.java)
         startActivityForResult(intent, requestCode)
