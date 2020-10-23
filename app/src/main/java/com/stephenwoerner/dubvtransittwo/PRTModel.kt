@@ -51,6 +51,7 @@ class PRTModel private constructor() {
             DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday -> if (dateTime.minutes > 45 || dateTime.minutes < 5) time += 7.0
             DayOfWeek.Tuesday, DayOfWeek.Thursday -> if (dateTime.minutes > 40 && dateTime.hours < 55) time += 7.0
             DayOfWeek.Saturday -> time += 2.0
+            DayOfWeek.Sunday -> time+= 24*60*60*1000
         }
         //Average TravelTime
         //Implement traveltime between stations

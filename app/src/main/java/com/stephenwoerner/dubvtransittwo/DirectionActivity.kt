@@ -24,6 +24,8 @@ import kotlinx.android.synthetic.main.display_layout.*
 import kotlinx.coroutines.*
 import timber.log.Timber
 import java.util.*
+import kotlin.collections.ArrayList
+import kotlin.math.*
 
 class DirectionActivity : Activity(), LocationListener {
 
@@ -68,19 +70,26 @@ class DirectionActivity : Activity(), LocationListener {
                     location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                     if (location == null) {
                         try {
-                            Thread.sleep(1000)
+                            Thread.sleep(500)
                         } catch (e: InterruptedException) {
                             val mess = e.message
                             if (mess != null) Timber.d("Thread sleep failed: ${e.message}")
                         }
                     }
                 }
-                val lat: Double
-                val lon: Double
-                lat = location.latitude
-                lon = location.longitude
+                val lat = location.latitude
+                val lon = location.longitude
+
                 Timber.d("Location : %s, %s ", lat, lon)
                 currentLocation = LatLng(lat, lon)
+
+                val morgantown = LatLng(39.634224, -79.954850)
+                val hundredMilesInKM = 160.934
+
+                if( getDistanceFromLatLonInKm(morgantown.lat, morgantown.lng, lat, lon) > hundredMilesInKM ) {
+                    finish()
+                }
+
             }
             return currentLocation
         }
@@ -113,21 +122,18 @@ class DirectionActivity : Activity(), LocationListener {
                 val lookupString = if(model.allHashMap.containsKey(originStr)) {
                     originStr
                 } else {
-                    val courseDbAdapter = CourseDbAdapter().open(context)
-                    val cursor = courseDbAdapter.fetchCourse(originStr)
-                    val og = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
-                    courseDbAdapter.close()
-                    og
+                    val courseDb = CourseDb.get(applicationContext)
+                    val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
+                    course.location
                 }
                 model.allHashMap[lookupString]!!
             }
         }
 
         if (!model.allHashMap.containsKey(destinationStr)) { //If its not in the HashMap then its a user course
-            val courseDbAdapter = CourseDbAdapter().open(context)
-            val cursor = courseDbAdapter.fetchCourse(destinationStr)
-            destinationStr = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
-            courseDbAdapter.close()
+            val courseDb = CourseDb.get(applicationContext)
+            val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
+            destinationStr = course.location
         }
         destination = model.allHashMap[destinationStr]!!
         navigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(R.drawable.ic_navigation_black_36dp).setMessage(R.string.alert_message).show() }
@@ -305,5 +311,17 @@ class DirectionActivity : Activity(), LocationListener {
         private lateinit var progress: ProgressBar
     }
 
+    private fun getDistanceFromLatLonInKm(lat1 : Double, lon1 : Double, lat2 : Double, lon2 : Double) : Double{
+        val r = 6371 // Radius of the earth in km
+        val dLat = deg2rad(lat2-lat1)  // deg2rad below
+        val dLon = deg2rad(lon2-lon1)
+        val a = sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon/2) * sin(dLon/2)
 
+        val c = 2 * atan2(sqrt(a), sqrt(1-a))
+        return r * c // Distance in km
+    }
+
+    private fun deg2rad(deg : Double) : Double {
+        return deg * (PI / 180.0)
+    }
 }

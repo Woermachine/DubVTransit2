@@ -13,23 +13,28 @@ import kotlinx.android.synthetic.main.edit_course.*
  * Created by srwoerner on 9/22/17.
  */
 class EditCourse : Activity() {
-    private lateinit var courseDbAdapter: CourseDbAdapter
+//    private lateinit var courseDbAdapter: CourseDbAdapter
+
+    private lateinit var courseDb: CourseDb
     private var rowId: Long = 0
 
     public override fun onCreate(savedInstance: Bundle?) {
         super.onCreate(savedInstance)
         setContentView(R.layout.edit_course)
         val isNew = intent.getBooleanExtra("isNew", true)
-        courseDbAdapter = CourseDbAdapter().open(applicationContext)
+        courseDb = CourseDb.get(applicationContext)
         val doneFab: FloatingActionButton = findViewById(R.id.done_button)
 
         doneFab.setOnClickListener(object : View.OnClickListener {
             override fun onClick(view: View) {
                 run {
                     if (isNew)
-                        courseDbAdapter.createCourse(editable_course_title.text.toString(), startBtn.text.toString(), course_note.text.toString())
+                        courseDb.coursesQueries.insert(course = editable_course_title.text.toString(),
+                            location = startBtn.text.toString(), note = course_note.text.toString())
                     else
-                        courseDbAdapter.updateCourse(rowId, editable_course_title.text.toString(), startBtn.text.toString(), course_note.text.toString())
+                        courseDb.coursesQueries.update( course = editable_course_title.text.toString(),
+                            location =  startBtn.text.toString(),note = course_note.text.toString(),
+                            _id = rowId,)
                     finish()
                 }
             }
@@ -42,13 +47,12 @@ class EditCourse : Activity() {
 
     private fun fillData() {
         val title = intent.getStringExtra("title")!!
-        val cursor = courseDbAdapter.fetchCourse(title)
-        cursor.moveToFirst()
-        if (cursor.count == 1) {
-            rowId = cursor.getLong(cursor.getColumnIndex(CourseDbAdapter.KEY_ROWID))
-            editable_course_title.setText(cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_COURSE)))
-            startBtn.text = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
-            course_note.setText(cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_NOTE)))
+        val course = courseDb.coursesQueries.selectCourse(title).executeAsOneOrNull()
+        if (course != null) {
+            rowId = course._id
+            editable_course_title.setText( course.course)
+            startBtn.text = course.location
+            course_note.setText(course.note)
         }
     }
 

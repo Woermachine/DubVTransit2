@@ -12,6 +12,7 @@ import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.course_items.view.*
 import kotlinx.android.synthetic.main.course_lists.*
 import java.util.*
+import kotlin.collections.ArrayList
 
 /**
  * Created by srwoerner on 8/26/17.
@@ -20,7 +21,8 @@ class CourseList : ListActivity() {
 
     //private String DEBUG = "CourseList";
 //    private var context: Context? = null
-    private lateinit var mDbHelper: CourseDbAdapter
+//    private lateinit var mDbHelper: CourseDbAdapter
+    private lateinit var mDb: CourseDb
     private lateinit var courseArrayList: ArrayList<String>
 
     public override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,8 +35,7 @@ class CourseList : ListActivity() {
             i.putExtra("isNew", true)
             startActivity(i)
         }
-        mDbHelper = CourseDbAdapter()
-        mDbHelper.open(applicationContext)
+        mDb = CourseDb.get(applicationContext)
         fillData()
         //registerForContextMenu(getListView());
     }
@@ -45,10 +46,10 @@ class CourseList : ListActivity() {
     }
 
     private fun fillData() {
-        val courseCursor = mDbHelper.fetchAllCourses()
+        val courseQuery = mDb.coursesQueries.selectAll().executeAsList()
         courseArrayList = ArrayList()
-        while (courseCursor.moveToNext()) {
-            courseArrayList.add(courseCursor.getString(courseCursor.getColumnIndex(CourseDbAdapter.KEY_COURSE)))
+        for(c in courseQuery) {
+            courseArrayList.add(c.course)
         }
         val adapter = CustomArrayAdapter(applicationContext, R.layout.course_items, courseArrayList)
         listAdapter = adapter
@@ -74,7 +75,7 @@ class CourseList : ListActivity() {
                 }
 
                 v.delete_button.setOnClickListener {
-                    mDbHelper.deleteCourse(title)
+                    mDb.coursesQueries.deleteByCourse(title)
                     fillData()
                 }
                 v.delete_button.setImageDrawable(ContextCompat.getDrawable(context, android.R.drawable.ic_menu_delete))

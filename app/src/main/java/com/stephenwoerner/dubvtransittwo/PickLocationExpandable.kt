@@ -51,10 +51,9 @@ class PickLocationExpandable : Activity() {
         childItems[2] = dormStrings.toTypedArray()
         if (useCourses) {
             val courseStrings = ArrayList<String>()
-            val courseDbAdapter = CourseDbAdapter().open(applicationContext)
-            val cursor = courseDbAdapter.fetchAllCourses()
-            while (cursor.moveToNext()) {
-                courseStrings.add(cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_COURSE)))
+            val courses = CourseDb.get(applicationContext).coursesQueries.selectAll().executeAsList()
+            for (course in courses) {
+                courseStrings.add(course.course)
             }
             courseStrings.sort()
             //childItems[3] = courseStrings.toArray(new String[courseStrings.size()]);
