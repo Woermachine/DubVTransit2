@@ -3,29 +3,44 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:background="@color/colorAccent"
     >
 
-    <ImageView
-        android:focusable="false"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:src="@mipmap/prt_background"
-        android:scaleType="centerCrop"
-        android:layout_centerInParent="true"/>
+<!--    <ImageView-->
+<!--        android:focusable="false"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:src="@mipmap/prt_background"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        android:layout_centerInParent="true"/>-->
+<!--    <fragment xmlns:android="http://schemas.android.com/apk/res/android"-->
+<!--        android:name="com.google.android.gms.maps.SupportMapFragment"-->
+<!--        android:id="@+id/map"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"/>-->
 
-    <RelativeLayout
+    <TextView
+        android:id="@+id/prt_badge"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="@drawable/rounded_bar_green"/>
+
+    <LinearLayout
+        android:id="@+id/layout_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_centerInParent="true">
-        <LinearLayout
-            android:id="@+id/layout_container"
+        android:background="@drawable/main_menu"
+        android:layout_below="@id/prt_badge"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:layout_margin="10dp"
+        app:elevation="2dp"
+        android:translationZ="2dp">
+
+        <GridLayout
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:background="@drawable/main_menu"
-            android:padding="10dp"
-            android:layout_alignParentTop="true"
-            android:layout_alignParentStart="true">
+            android:layout_height="wrap_content">
 
             <TextView
                 android:layout_width="wrap_content"
@@ -35,127 +50,112 @@
 
             <Button
                 android:id="@+id/destBtn"
-                android:contentDescription="@string/change_dest"
-                style="@style/Widget.AppCompat.Button.Colored"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/destination"
-                android:textColorHint="#CCFFFFFF"/>
-
+                android:textSize="16sp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="@color/colorAccent"/>
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="#FF000000"
-                android:text="@string/from_main" />
+                android:text="@string/from_main"
+                android:layout_row="1"
+                android:layout_column="0"/>
 
             <Button
                 android:id="@+id/startBtn"
                 android:contentDescription="@string/change_start"
-                style="@style/Widget.AppCompat.Button.Colored"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/current_location"
-                android:textColor="#FFFFFFFF"
-                android:textColorHint="#CCFFFFFF" />
+                android:textSize="16sp"
+                android:textColor="@color/colorAccent" />
 
 
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
+            <Button
+                android:id="@+id/continueBtn"
+                android:contentDescription="@string/send_request"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@mipmap/continue_arrow"
+                android:elevation="2dp"
+                android:translationZ="2dp"/>
+        </GridLayout>
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="5dp"
-                    android:layout_marginBottom="5dp"
-                    android:text="@string/departure_time"
-                    android:textColor="#FF000000"
-                    android:layout_gravity="center"/>
-
-                <CheckBox
-                    android:id="@+id/useCurrentTimeCB"
-                    android:contentDescription="@string/current_time_bool"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="true"
-                    android:text="@string/current_time"
-                    android:textColor="#FF000000" />
-            </LinearLayout>
-
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content">
-                <Button
-                    android:id="@+id/timeBtn"
-                    style="@style/Widget.AppCompat.Button.Colored"
-                    android:contentDescription="@string/change_time"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:color="#CC000000"
-                    android:text="@string/current_time"
-                    android:textColor="#FFFFFFFF"
-                    android:textColorHint="#CCFFFFFF"/>
-
-                <Button
-                    android:id="@+id/dateBtn"
-                    android:contentDescription="@string/change_date"
-                    style="@style/Widget.AppCompat.Button.Colored"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:color="#CC000000"
-                    android:text="@string/current_day"
-                    android:textColor="#FFFFFFFF"
-                    android:textColorHint="#CCFFFFFF"
-                    android:visibility="visible" />
-            </LinearLayout>
-
-        </LinearLayout>
-        <Button
-            android:id="@+id/prtStatusBtn"
-            android:contentDescription="@string/status"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:backgroundTint="@color/colorPrimary"
-            android:drawableTop="@mipmap/prt_icon"
-            android:text="@string/prt_status"
-            android:textColor="#000000"
-            android:layout_marginTop="10dp"
-            android:paddingTop="20dp"
-            android:layout_below="@+id/layout_container"
-            android:layout_alignEnd="@+id/layout_container"
-            android:layout_alignStart="@+id/layout_container"
-            android:elevation="10dp"/>
-        <TextView
-            android:id="@+id/prt_badge"
-            android:layout_width="0dp"
-            android:layout_height="10dp"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:layout_marginTop="10dp"
-            android:layout_alignEnd="@+id/prtStatusBtn"
-            android:layout_alignStart="@+id/prtStatusBtn"
-            android:layout_alignTop="@+id/prtStatusBtn"
-            android:paddingTop="20dp"
-            android:background="@drawable/rounded_bar_green"
-            android:elevation="10dp"/>
-    </RelativeLayout>
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:text="@string/departure_time"
+                android:textColor="#FF000000"
+                android:layout_gravity="center"/>
+
+            <CheckBox
+                android:id="@+id/useCurrentTimeCB"
+                android:contentDescription="@string/current_time_bool"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/current_time"
+                android:textColor="#FF000000" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+            <Button
+                android:id="@+id/timeBtn"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:contentDescription="@string/change_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:color="#CC000000"
+                android:text="@string/current_time"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#CCFFFFFF"/>
+
+            <Button
+                android:id="@+id/dateBtn"
+                android:contentDescription="@string/change_date"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:color="#CC000000"
+                android:text="@string/current_day"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:visibility="visible" />
+        </LinearLayout>
+
+    </LinearLayout>
 
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/continueBtn"
-        android:contentDescription="@string/send_request"
+        android:id="@+id/prtStatusBtn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
-        app:srcCompat="@mipmap/continue_arrow"
-        android:backgroundTint="@color/colorPrimary"
-        android:tint="@android:color/white"
-        android:layout_margin="10dp"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/prt_badge"
         android:layout_alignParentEnd="true"
-        android:elevation="2dp"/>
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        android:contentDescription="@string/status"
+        app:srcCompat="@mipmap/prt_icon"
+        android:backgroundTint="@color/colorPrimary"
+        android:elevation="10dp"
+        android:translationZ="10dp"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/courseBtn"
@@ -166,11 +166,11 @@
         android:focusable="true"
         app:srcCompat="@mipmap/schedule_icon"
         android:backgroundTint="@color/colorPrimary"
-        android:tint="@android:color/white"
         android:layout_margin="10dp"
         android:layout_alignParentBottom="true"
-        android:layout_alignParentStart= "true"
-        android:elevation="2dp"/>
+        android:elevation="10dp"
+        android:translationZ="10dp"/>
+
 
 
 </RelativeLayout>
