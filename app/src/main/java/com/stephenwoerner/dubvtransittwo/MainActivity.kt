@@ -1,7 +1,6 @@
 package com.stephenwoerner.dubvtransittwo
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
@@ -11,9 +10,17 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
+import android.view.Window
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
@@ -26,7 +33,7 @@ import java.util.*
  * The main activity. Allows user to specify an origin, destination, and departure
  * Created by Stephen on 3/23/2017.
  */
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() , OnMapReadyCallback {
     private lateinit var leavingTime: Calendar
     private lateinit var model: PRTModel
 
@@ -35,10 +42,19 @@ class MainActivity : Activity() {
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
     private var useCurrentTime = true
 
+    private lateinit var mMap: GoogleMap
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //initialize
         super.onCreate(savedInstanceState)
+
+        window.requestFeature(Window.FEATURE_ACTION_BAR)
+        supportActionBar?.hide()
         setContentView(R.layout.activity_main)
+
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
         model = PRTModel.get()
         CoroutineScope(IO).launch {
             model.requestPRTStatus()
@@ -63,9 +79,9 @@ class MainActivity : Activity() {
             CoroutineScope(IO).launch {
                 if (model.requestPRTStatus())
                     Toast.makeText(
-                        applicationContext,
-                        "You can only update the status once every 30 seconds\nLong press to see full prt status",
-                        Toast.LENGTH_LONG
+                            applicationContext,
+                            "You can only update the status once every 30 seconds\nLong press to see full prt status",
+                            Toast.LENGTH_LONG
                     ).show()
                 prtButtonColor()
             }
@@ -93,14 +109,14 @@ class MainActivity : Activity() {
             showTimePickerDialog()
         }
         if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1
             )
         }
         if (useCurrentTimeCB.isChecked) {
@@ -132,8 +148,8 @@ class MainActivity : Activity() {
         if (resultCode == RESULT_OK) {
             val selected = data!!.getStringExtra("selected")
             when (requestCode) {
-                0 ->  destBtn.text = selected
-                1 ->  startBtn.text = selected
+                0 -> destBtn.text = selected
+                1 -> startBtn.text = selected
             }
         }
     }
@@ -149,11 +165,11 @@ class MainActivity : Activity() {
             timeBtn.text = timeFormat.format(leavingTime.time)
         }
         val timePickerDialog = TimePickerDialog(
-            this,
-            listener,
-            leavingTime[Calendar.HOUR_OF_DAY],
-            leavingTime[Calendar.MINUTE],
-            false
+                this,
+                listener,
+                leavingTime[Calendar.HOUR_OF_DAY],
+                leavingTime[Calendar.MINUTE],
+                false
         )
         timePickerDialog.setTitle("Time Dialog")
         //timePickerDialog.amPM
@@ -174,11 +190,11 @@ class MainActivity : Activity() {
             dateBtn!!.text = dateFormat.format(leavingTime.time)
         }
         val datePickerDialog = DatePickerDialog(
-            this,
-            listener,
-            leavingTime[Calendar.YEAR],
-            leavingTime[Calendar.MONTH],
-            leavingTime[Calendar.DAY_OF_MONTH]
+                this,
+                listener,
+                leavingTime[Calendar.YEAR],
+                leavingTime[Calendar.MONTH],
+                leavingTime[Calendar.DAY_OF_MONTH]
         )
         datePickerDialog.setTitle("Date Dialog")
         Timber.d("showing date picker")
@@ -242,5 +258,25 @@ class MainActivity : Activity() {
             prt_badge.background = ContextCompat.getDrawable(this, R.drawable.rounded_bar_green)
         else
             prt_badge.background = ContextCompat.getDrawable(this, R.drawable.rounded_bar_red)
+    }
+
+    /**
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just move the camera to Sydney and add a marker in Sydney.
+     */
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+        val allPointsHM = model.allHashMap
+        model.allHashMap.keys.forEach { placeName ->
+            val loc = allPointsHM[placeName]!!
+            val location = LatLng(loc.lat, loc.lng)
+            mMap.addMarker(MarkerOptions()
+                    .position(location)
+                    .title(placeName))
+        }
+
+        // Add a marker in Sydney and move the camera
+        val morgantown = LatLng(39.634224, -79.954850)
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(morgantown.latitude, morgantown.longitude), 13.0f))
     }
 }

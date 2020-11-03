@@ -14,6 +14,7 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.Window
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
@@ -102,11 +103,13 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.requestFeature(Window.FEATURE_ACTION_BAR)
+        supportActionBar?.hide()
         setContentView(R.layout.display_layout)
         context = this@DirectionActivity
 
         val viewModel = ViewModelProvider(this).get(DirectionViewModel::class.java)
-        viewModel
 
         var originStr = ""
         try {
