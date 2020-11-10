@@ -6,8 +6,8 @@ import com.google.maps.model.*
 import com.soywiz.klock.DateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
-import org.joda.time.Instant
 import timber.log.Timber
+import java.time.Instant
 import kotlin.collections.ArrayList
 
 class MapsDataClient {
@@ -32,8 +32,8 @@ class MapsDataClient {
         val closestPRTAStr = model.allHashMap[closestPRTA]
         val closestPRTBStr = model.allHashMap[closestPRTB]
 
-        val geoContext = GeoApiContext().setApiKey(BuildConfig.MAPS_KEY)
-        val instant = Instant(leavingTime)
+        val geoContext = GeoApiContext.Builder().apiKey(BuildConfig.MAPS_KEY).build()
+        val instant = Instant.ofEpochSecond(leavingTime)
 
         val deferredCar = GlobalScope.async {
             val carResult = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).await()
