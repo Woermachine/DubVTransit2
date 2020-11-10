@@ -11,7 +11,6 @@ import android.widget.ArrayAdapter
 import androidx.core.content.ContextCompat
 import kotlinx.android.synthetic.main.course_items.view.*
 import kotlinx.android.synthetic.main.course_lists.*
-import java.util.*
 import kotlin.collections.ArrayList
 
 /**

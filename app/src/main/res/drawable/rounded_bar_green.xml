@@ -3,7 +3,7 @@
     android:shape="rectangle">
     <solid android:color="@color/colorUp"
         />
-    <stroke android:color="@color/ButtonSelected"  android:width="2dp" />
+<!--    <stroke android:color="@color/ButtonSelected"/>-->
 
 </shape>
     <!--#FF37fa34"-->

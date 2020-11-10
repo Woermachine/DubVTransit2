@@ -1,5 +1,6 @@
 package com.stephenwoerner.dubvtransittwo
 
+import android.content.Context
 import com.google.gson.Gson
 import com.google.maps.model.LatLng
 import com.soywiz.klock.DateTime
@@ -32,13 +33,10 @@ class PRTModel private constructor() {
         fun get(): PRTModel {
             if (!::model.isInitialized) {
                 model = PRTModel()
+                model.initializeHashMaps()
             }
             return model
         }
-    }
-
-    init {
-        initializeHashMaps()
     }
 
     fun estimateTime(prtStationA: String, prtStationB: String, timeInMillis: Long): Double {
@@ -275,6 +273,23 @@ class PRTModel private constructor() {
         this.buildingHashMap = buildingHashMap
         this.dormHashMap = dormHashMap
         this.allHashMap = allHashMap
+    }
+
+    fun findLatLng( name : String , currentLocation: LatLng, context : Context ) : LatLng? {
+        return when (name) {
+            context.getString(R.string.current_location) -> currentLocation
+            context.getString(R.string.destination) -> null
+            else -> {
+                val lookupString = if (allHashMap.containsKey(name)) {
+                    name
+                } else {
+                    val courseDb = CourseDb.get(context)
+                    val course = courseDb.coursesQueries.selectCourse(name).executeAsOne()
+                    course.location
+                }
+                model.allHashMap[lookupString]!!
+            }
+        }
     }
 
 }

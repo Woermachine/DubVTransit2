@@ -1,19 +1,31 @@
 package com.stephenwoerner.dubvtransittwo
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.DatePickerDialog.OnDateSetListener
 import android.app.TimePickerDialog
 import android.app.TimePickerDialog.OnTimeSetListener
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Criteria
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
 import android.view.View
+import android.view.Window
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers.IO
@@ -26,19 +38,68 @@ import java.util.*
  * The main activity. Allows user to specify an origin, destination, and departure
  * Created by Stephen on 3/23/2017.
  */
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() , OnMapReadyCallback, LocationListener {
     private lateinit var leavingTime: Calendar
     private lateinit var model: PRTModel
 
+    private lateinit var locationManager : LocationManager
 
     private val timeFormat = SimpleDateFormat("h:mm a", Locale.US)
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
     private var useCurrentTime = true
 
+    private lateinit var mMap: GoogleMap
+
+
+    private val location: com.google.maps.model.LatLng
+        get() {
+            var currentLocation = com.google.maps.model.LatLng(0.0, 0.0)
+            locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1
+                )
+            } else {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
+                val criteria = Criteria()
+                criteria.accuracy = Criteria.ACCURACY_FINE
+//                val providers = locationManager.allProviders
+//                val bestProvider = providers[0]
+                var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                while (location == null) {
+                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                    if (location == null) {
+                        try {
+                            Thread.sleep(500)
+                        } catch (e: InterruptedException) {
+                            val mess = e.message
+                            if (mess != null) Timber.d("Thread sleep failed: ${e.message}")
+                        }
+                    }
+                }
+                val lat = location.latitude
+                val lon = location.longitude
+
+                Timber.d("Location : %s, %s ", lat, lon)
+                currentLocation = com.google.maps.model.LatLng(lat, lon)
+
+            }
+            return currentLocation
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         //initialize
         super.onCreate(savedInstanceState)
+
+        window.requestFeature(Window.FEATURE_ACTION_BAR)
+        supportActionBar?.hide()
         setContentView(R.layout.activity_main)
+
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
+        mapFragment.getMapAsync(this)
+
         model = PRTModel.get()
         CoroutineScope(IO).launch {
             model.requestPRTStatus()
@@ -61,13 +122,17 @@ class MainActivity : Activity() {
         }
         prtStatusBtn.setOnClickListener {
             CoroutineScope(IO).launch {
-                if (model.requestPRTStatus())
-                    Toast.makeText(
-                        applicationContext,
-                        "You can only update the status once every 30 seconds\nLong press to see full prt status",
-                        Toast.LENGTH_LONG
-                    ).show()
-                prtButtonColor()
+                val prtOn = model.requestPRTStatus()
+                runOnUiThread {
+                    if(prtOn)
+                        Toast.makeText(
+                            applicationContext,
+                            "You can only update the status once every 30 seconds\nLong press to see full prt status",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                    prtButtonColor()
+                }
             }
         }
         prtStatusBtn.setOnLongClickListener {
@@ -93,14 +158,14 @@ class MainActivity : Activity() {
             showTimePickerDialog()
         }
         if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
+                        this,
+                        Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
         ) {
             ActivityCompat.requestPermissions(
-                this,
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1
             )
         }
         if (useCurrentTimeCB.isChecked) {
@@ -130,11 +195,41 @@ class MainActivity : Activity() {
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)  {
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == RESULT_OK) {
-            val selected = data!!.getStringExtra("selected")
+            val selected = data!!.getStringExtra("selected")!!
             when (requestCode) {
-                0 ->  destBtn.text = selected
-                1 ->  startBtn.text = selected
+                0 -> {
+                    destBtn.text = selected
+                }
+                1 -> {
+                    startBtn.text = selected
+                }
             }
+
+            mMap.clear()
+
+            val destStr = destBtn.text.toString()
+            val destLoc = model.findLatLng(destStr, location, applicationContext)
+            destLoc?.let {
+                val destLatLng = LatLng(it.lat, it.lng)
+                mMap.addMarker(
+                    MarkerOptions()
+                        .position(destLatLng)
+                        .title(destStr)
+                )
+            }
+
+
+            val startStr = startBtn.text.toString()
+            val startLoc = model.findLatLng(startStr, location, applicationContext)
+            startLoc?.let {
+                val startLatLng = LatLng(it.lat, it.lng)
+                mMap.addMarker(
+                    MarkerOptions()
+                        .position(startLatLng)
+                        .title(startStr)
+                )
+            }
+
         }
     }
 
@@ -149,11 +244,11 @@ class MainActivity : Activity() {
             timeBtn.text = timeFormat.format(leavingTime.time)
         }
         val timePickerDialog = TimePickerDialog(
-            this,
-            listener,
-            leavingTime[Calendar.HOUR_OF_DAY],
-            leavingTime[Calendar.MINUTE],
-            false
+                this,
+                listener,
+                leavingTime[Calendar.HOUR_OF_DAY],
+                leavingTime[Calendar.MINUTE],
+                false
         )
         timePickerDialog.setTitle("Time Dialog")
         //timePickerDialog.amPM
@@ -174,11 +269,11 @@ class MainActivity : Activity() {
             dateBtn!!.text = dateFormat.format(leavingTime.time)
         }
         val datePickerDialog = DatePickerDialog(
-            this,
-            listener,
-            leavingTime[Calendar.YEAR],
-            leavingTime[Calendar.MONTH],
-            leavingTime[Calendar.DAY_OF_MONTH]
+                this,
+                listener,
+                leavingTime[Calendar.YEAR],
+                leavingTime[Calendar.MONTH],
+                leavingTime[Calendar.DAY_OF_MONTH]
         )
         datePickerDialog.setTitle("Date Dialog")
         Timber.d("showing date picker")
@@ -243,4 +338,37 @@ class MainActivity : Activity() {
         else
             prt_badge.background = ContextCompat.getDrawable(this, R.drawable.rounded_bar_red)
     }
+
+    /**
+     * This is where we can add markers or lines, add listeners or move the camera. In this case,
+     * we just move the camera to Sydney and add a marker in Sydney.
+     */
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        mMap.uiSettings.isMapToolbarEnabled = false
+//        val allPointsHM = model.allHashMap
+//        model.allHashMap.keys.forEach { placeName ->
+//            val loc = allPointsHM[placeName]!!
+//            val location = LatLng(loc.lat, loc.lng)
+//            mMap.addMarker(MarkerOptions()
+//                    .position(location)
+//                    .title(placeName))
+//        }
+
+        // Add a marker in Sydney and move the camera
+        val morgantown = LatLng(39.634224, -79.954850)
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(morgantown.latitude, morgantown.longitude), 13.0f))
+    }
+
+
+    /**
+     * update location
+     * @param location, user's current location
+     */
+    override fun onLocationChanged(location: Location) {
+        Timber.v("Location Changed ${location.latitude} and ${location.longitude}")
+        locationManager.removeUpdates(this)
+    }
+
 }
