@@ -4,9 +4,7 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.widget.SimpleExpandableListAdapter
-import com.stephenwoerner.dubvtransittwo.PRTModel.Companion.get
 import kotlinx.android.synthetic.main.expandable_list_view.*
-import java.util.*
 
 /**
  * Control interface to pick locations
@@ -37,7 +35,7 @@ class PickLocationExpandable : Activity() {
             childItems = childItemsB
         }
 //        simpleExpandableListView = findViewById(R.id.expandable_list)
-        val prtModel = get(applicationContext)
+        val prtModel = PRTModel.get()
         val prtStrings = ArrayList(prtModel.prtHashMap.keys)
         prtStrings.sort()
         //childItems[0] = prtStrings.toArray(new String[prtStrings.size()]);
@@ -52,10 +50,9 @@ class PickLocationExpandable : Activity() {
         childItems[2] = dormStrings.toTypedArray()
         if (useCourses) {
             val courseStrings = ArrayList<String>()
-            val courseDbAdapter = CourseDbAdapter().open(applicationContext)
-            val cursor = courseDbAdapter.fetchAllCourses()
-            while (cursor.moveToNext()) {
-                courseStrings.add(cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_COURSE)))
+            val courses = CourseDb.get(applicationContext).coursesQueries.selectAll().executeAsList()
+            for (course in courses) {
+                courseStrings.add(course.course)
             }
             courseStrings.sort()
             //childItems[3] = courseStrings.toArray(new String[courseStrings.size()]);

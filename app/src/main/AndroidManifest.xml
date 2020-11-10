@@ -13,8 +13,8 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <meta-data
-            android:name="com.google.android.gms.ads.AD_MANAGER_APP"
-            android:value="true"/>
+            android:name="com.google.android.geo.API_KEY"
+            android:value="@string/maps_api_key" />
         <activity android:name="com.stephenwoerner.dubvtransittwo.MainActivity" android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

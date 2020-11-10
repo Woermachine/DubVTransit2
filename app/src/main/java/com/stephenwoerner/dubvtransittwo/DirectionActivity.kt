@@ -1,7 +1,6 @@
 package com.stephenwoerner.dubvtransittwo
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
@@ -15,16 +14,23 @@ import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import android.view.Window
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.google.maps.model.*
+import androidx.lifecycle.ViewModelProvider
+import com.google.maps.model.LatLng
 import kotlinx.android.synthetic.main.display_layout.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
+import kotlin.math.*
 
-class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener {
+class DirectionActivity : AppCompatActivity(), LocationListener {
 
     enum class Route { CAR, BUS, WALK, PRT }
 
@@ -36,7 +42,7 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
     private lateinit var origin : LatLng
     private lateinit var destination : LatLng
 
-    private lateinit var leavingTime : Calendar
+    private var leavingTime = 0L
 
     private lateinit var locationManager : LocationManager
 
@@ -46,14 +52,20 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
     private lateinit var prtDirections : ArrayList<String>
     private var leavingTimeMillis : Long = 0L
     private var context = this@DirectionActivity
-    private val model = PRTModel.get(context)
+    private val model = PRTModel.get()
+
+    private val mapsDataClient = MapsDataClient()
 
     private val location: LatLng
         get() {
             var currentLocation = LatLng(0.0, 0.0)
             locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-                ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 1)
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1
+                )
             } else {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
                 val criteria = Criteria()
@@ -65,36 +77,51 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
                     location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                     if (location == null) {
                         try {
-                            Thread.sleep(1000)
+                            Thread.sleep(500)
                         } catch (e: InterruptedException) {
                             val mess = e.message
                             if (mess != null) Timber.d("Thread sleep failed: ${e.message}")
                         }
                     }
                 }
-                val lat: Double
-                val lon: Double
-                lat = location.latitude
-                lon = location.longitude
+                val lat = location.latitude
+                val lon = location.longitude
+
                 Timber.d("Location : %s, %s ", lat, lon)
                 currentLocation = LatLng(lat, lon)
+
+                val morgantown = LatLng(39.634224, -79.954850)
+                val hundredMilesInKM = 160.934
+
+                if( getDistanceFromLatLonInKm(morgantown.lat, morgantown.lng, lat, lon) > hundredMilesInKM ) {
+                    finish()
+                }
+
             }
             return currentLocation
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        window.requestFeature(Window.FEATURE_ACTION_BAR)
+        supportActionBar?.hide()
         setContentView(R.layout.display_layout)
         context = this@DirectionActivity
+
+        val viewModel = ViewModelProvider(this).get(DirectionViewModel::class.java)
 
         var originStr = ""
         try {
             originStr = intent.getStringExtra("origin")!!
             destinationStr = intent.getStringExtra("destination")!!
             useCurrentTime = intent.getBooleanExtra("useCurrentTime", true)
-            leavingTimeMillis =  intent.getLongExtra("leavingTime", Calendar.getInstance().timeInMillis)
+            leavingTimeMillis =  intent.getLongExtra(
+                "leavingTime",
+                Calendar.getInstance().timeInMillis
+            )
         } catch (e: NullPointerException) {
-            Timber.e( e)
+            Timber.e(e)
             finish()
         }
 
@@ -104,37 +131,52 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
         val displayDestination = "To: $destinationStr"
         destination_location.text = displayDestination
 
-        model.requestPRTStatus()
-
         origin = when (originStr) {
             getString(R.string.current_location) -> location
             else -> {
                 val lookupString = if(model.allHashMap.containsKey(originStr)) {
                     originStr
                 } else {
-                    val courseDbAdapter = CourseDbAdapter().open(context)
-                    val cursor = courseDbAdapter.fetchCourse(originStr)
-                    cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
+                    val courseDb = CourseDb.get(applicationContext)
+                    val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
+                    course.location
                 }
                 model.allHashMap[lookupString]!!
             }
         }
 
         if (!model.allHashMap.containsKey(destinationStr)) { //If its not in the HashMap then its a user course
-            val courseDbAdapter = CourseDbAdapter().open(context)
-            val cursor = courseDbAdapter.fetchCourse(destinationStr)
-            destinationStr = cursor.getString(cursor.getColumnIndex(CourseDbAdapter.KEY_LOCATION))
+            val courseDb = CourseDb.get(applicationContext)
+            val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
+            destinationStr = course.location
         }
         destination = model.allHashMap[destinationStr]!!
-        NavigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(R.drawable.ic_navigation_black_36dp).setMessage(R.string.alert_message).show() }
+        navigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton(
+            "Cancel"
+        ) { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(
+            R.drawable.ic_navigation_black_36dp
+        ).setMessage(R.string.alert_message).show() }
 
         progress = ProgressBar(context)
         progress.isIndeterminate = true
         progress.visibility = View.VISIBLE
-        MapsAsyncTask().execute(leavingTimeMillis, origin, destination, useCurrentTime, context, this)
+
+        CoroutineScope(Dispatchers.IO).launch {
+            model.requestPRTStatus()
+            val results = mapsDataClient.execute(
+                leavingTimeMillis,
+                origin,
+                destination
+            )
+
+            runOnUiThread {
+                onResults(results)
+            }
+        }
     }
 
-    override fun onResults(mapsTaskResults: MapsAsyncTask.MapsTaskResults) {
+    private fun onResults(mapsTaskResults: MapsDataClient.MapsTaskResults) {
+
         progress.visibility = View.GONE
 
         busDirections = mapsTaskResults.busStepsAndDuration.directions
@@ -167,25 +209,25 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
         val prtButtonText = "${ mapsTaskResults.prtStepsAndDuration.duration / 60} min"
         val carButtonText = "${ mapsTaskResults.carStepsAndDuration.duration / 60} min"
 
-        BusButton.text = busButtonText
-        WalkButton.text = walkingButtonText
-        PRTButton.text = prtButtonText
-        CarButton.text = carButtonText
+        busButton.text = busButtonText
+        walkButton.text = walkingButtonText
+        prtButton.text = prtButtonText
+        carButton.text = carButtonText
         list2.adapter = directionsStepArrayAdapter
-        PRTBadge.background = prtButtonColor()
+        prtBadge.background = prtButtonColor()
 
         when (mapsTaskResults.fastestRoute) {
             Route.CAR -> {
-                CarButton.background = btnSelectColor
+                carButton.background = btnSelectColor
             }
             Route.BUS -> {
-                BusButton.background = btnSelectColor
+                busButton.background = btnSelectColor
             }
             Route.WALK -> {
-                WalkButton.background = btnSelectColor
+                walkButton.background = btnSelectColor
             }
             Route.PRT -> {
-                PRTButton.background = btnSelectColor
+                prtButton.background = btnSelectColor
             }
         }
     }
@@ -196,27 +238,27 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
      */
     fun changeSelected(v: View) {
         val unselected = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonUnselected))
-        CarButton.background = unselected
-        PRTButton.background = unselected
-        WalkButton.background = unselected
-        BusButton.background = unselected
+        carButton.background = unselected
+        prtButton.background = unselected
+        walkButton.background = unselected
+        busButton.background = unselected
 
         val selectedColor = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonSelected))
         list2.adapter = when (v.id) {
-            R.id.BusButton -> {
-                PRTButton.background = selectedColor
+            R.id.busButton -> {
+                prtButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, busDirections)
             }
-            R.id.WalkButton -> {
-                WalkButton.background = selectedColor
+            R.id.walkButton -> {
+                walkButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, walkingDirections)
             }
-            R.id.PRTButton -> {
-                PRTButton.background = selectedColor
+            R.id.prtButton -> {
+                prtButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, prtDirections)
             }
             else -> { // Assume Car
-                CarButton.background = selectedColor
+                carButton.background = selectedColor
                 ArrayAdapter(this, R.layout.list_item, carDirections)
             }
         }
@@ -267,7 +309,7 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
             getMuhDrawable(R.drawable.rounded_textview_red)
     }
 
-    private fun getMuhDrawable(id : Int) : Drawable {
+    private fun getMuhDrawable(id: Int) : Drawable {
         return ContextCompat.getDrawable(applicationContext, id)!!
     }
 
@@ -288,5 +330,19 @@ class DirectionActivity : Activity(), LocationListener, MapsAsyncTask.DAListener
         private lateinit var progress: ProgressBar
     }
 
+    private fun getDistanceFromLatLonInKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double) : Double{
+        val r = 6371 // Radius of the earth in km
+        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
+        val dLon = deg2rad(lon2 - lon1)
+        val a = sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
+            dLon / 2
+        )
 
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return r * c // Distance in km
+    }
+
+    private fun deg2rad(deg: Double) : Double {
+        return deg * (PI / 180.0)
+    }
 }

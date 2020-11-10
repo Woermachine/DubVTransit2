@@ -1,0 +1,25 @@
+
+CREATE TABLE COURSES (_id INTEGER PRIMARY KEY AUTOINCREMENT, course TEXT NOT NULL, location TEXT NOT NULL, note TEXT NOT NULL);
+
+insert:
+INSERT INTO COURSES (course , location, note)
+VALUES (?, ?, ?);
+
+deleteByID:
+DELETE FROM COURSES WHERE _id=?;
+
+deleteByCourse:
+DELETE FROM COURSES WHERE course=?;
+
+selectAll:
+SELECT * FROM COURSES;
+
+selectByID:
+SELECT * FROM COURSES WHERE _id=?;
+
+selectCourse:
+SELECT * FROM COURSES WHERE course=?;
+
+update:
+UPDATE COURSES SET course=?, location=?, note=? WHERE _id=?;
+

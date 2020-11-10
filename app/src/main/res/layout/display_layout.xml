@@ -68,7 +68,7 @@
         android:layout_alignParentStart="true">
 
         <Button
-            android:id="@+id/BusButton"
+            android:id="@+id/busButton"
             android:contentDescription="@string/bus_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
             tools:ignore="ButtonStyle" />
 
         <Button
-            android:id="@+id/PRTButton"
+            android:id="@+id/prtButton"
             android:contentDescription="@string/prt_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -97,7 +97,7 @@
             tools:ignore="ButtonStyle" />
 
         <Button
-            android:id="@+id/WalkButton"
+            android:id="@+id/walkButton"
             android:contentDescription="@string/walking_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -111,7 +111,7 @@
             tools:ignore="ButtonStyle" />
 
         <Button
-            android:id="@+id/CarButton"
+            android:id="@+id/carButton"
             android:contentDescription="@string/walking_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -142,7 +142,7 @@
             android:layout_centerHorizontal="true"/>
 
         <TextView
-            android:id="@+id/PRTBadge"
+            android:id="@+id/prtBadge"
             android:layout_width="20dp"
             android:layout_height="20dp"
             android:layout_alignEnd="@id/midpoint"
@@ -150,7 +150,7 @@
 
     </RelativeLayout>
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:id="@+id/NavigationButton"
+        android:id="@+id/navigationButton"
         android:contentDescription="@string/open_directions"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

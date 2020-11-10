@@ -9,10 +9,14 @@ import android.database.sqlite.SQLiteOpenHelper
 import timber.log.Timber
 
 /**
+ * @deprecated
+ * Use CourseDb instead
+ *
  * Adapter for a database to
  *
  * Created by srwoerner on 8/26/17.
  */
+@SuppressWarnings("unused")
 class CourseDbAdapter {
         private lateinit var mDbHelper: DatabaseHelper
         private lateinit var mDb: SQLiteDatabase
@@ -40,6 +44,7 @@ class CourseDbAdapter {
          * if the database could be neither opened or created
          */
         @Throws(SQLException::class)
+        @SuppressWarnings("unused")
         fun open(context: Context): CourseDbAdapter {
             mDbHelper = DatabaseHelper(context)
             mDb = mDbHelper.writableDatabase
@@ -59,6 +64,7 @@ class CourseDbAdapter {
          * the course of the course
          * @return rowId or -1 if failed
          */
+        @SuppressWarnings("unused")
         fun createCourse(course: String?, location: String?, note: String?): Long {
             val initialValues = ContentValues()
             initialValues.put(KEY_COURSE, course)
@@ -179,6 +185,8 @@ class CourseDbAdapter {
              */
             private const val DATABASE_CREATE = ("create table courses (" + KEY_ROWID + " integer primary key autoincrement, "
                     + KEY_COURSE + " text not null, " + KEY_LOCATION + " text not null, " + KEY_NOTE + " text not null);")
+
+            // CREATE TABLE COURSES (_id INTEGER PRIMARY KEY AUTOINCREMENT course TEXT NOT NULL, location TEXT NOT NULL, note TEXT NOT NULL);
             private const val DATABASE_NAME = "data"
             private const val DATABASE_TABLE = "courses"
             private const val DATABASE_VERSION = 1
