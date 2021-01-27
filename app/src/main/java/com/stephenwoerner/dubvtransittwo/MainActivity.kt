@@ -187,7 +187,7 @@ class MainActivity : AppCompatActivity() , OnMapReadyCallback, LocationListener 
      * @param v button
      */
     private fun showLocationList(v: View) {
-        val requestCode = if(v.id == R.id.destination_location) 0 else 1
+        val requestCode = if(v == destBtn) 0 else 1
         val intent = Intent(this, PickLocationExpandable::class.java)
         startActivityForResult(intent, requestCode)
     }
