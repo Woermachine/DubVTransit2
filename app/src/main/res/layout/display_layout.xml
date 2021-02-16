@@ -42,7 +42,7 @@
 
 
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list2"
         android:contentDescription="@string/directions"
         android:layout_width="match_parent"

@@ -3,6 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools"
     android:padding="5dp">
 
     <TextView
@@ -14,7 +15,7 @@
         android:layout_alignTop="@+id/delete_button"
         android:layout_alignBottom="@+id/delete_button"
         android:textColor="#000000"
-        android:text="text"
+        tool:text="text"
         android:textAppearance="@android:style/TextAppearance.Material.Medium"
         android:gravity="center_vertical"/>
 
