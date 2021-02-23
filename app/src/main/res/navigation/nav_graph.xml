@@ -8,5 +8,29 @@
         android:id="@+id/mapFragment"
         android:name="com.stephenwoerner.dubvtransittwo.MapFragment"
         android:label="fragment_map"
-        tools:layout="@layout/fragment_map" />
+        tools:layout="@layout/fragment_map" >
+        <action
+            android:id="@+id/action_mapFragment_to_courseList"
+            app:destination="@id/courseList"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+    </fragment>
+    <fragment
+        android:id="@+id/courseList"
+        android:name="com.stephenwoerner.dubvtransittwo.CourseList"
+        android:label="CourseList" >
+        <action
+            android:id="@+id/action_courseList_to_editCourse"
+            app:destination="@id/editCourse"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+    </fragment>
+    <fragment
+        android:id="@+id/editCourse"
+        android:name="com.stephenwoerner.dubvtransittwo.EditCourse"
+        android:label="EditCourse" />
 </navigation>

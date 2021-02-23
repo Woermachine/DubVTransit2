@@ -32,6 +32,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,7 +43,7 @@ import java.util.*
 /**
  * Allows user to specify an origin, destination, and departure
  */
-class MapFragment : Fragment() , OnMapReadyCallback, LocationListener {
+class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, LocationListener {
     private lateinit var leavingTime: Calendar
     private lateinit var model: PRTModel
 
@@ -162,10 +163,8 @@ class MapFragment : Fragment() , OnMapReadyCallback, LocationListener {
             launchDirectionActivity()
         }
 
-        val courseBtn = view.findViewById<FloatingActionButton>(R.id.courseBtn)
-        courseBtn.setOnClickListener {
-            launchCourseList()
-        }
+        courseBtn.setOnClickListener(this)
+
         dateBtn.setOnClickListener {
             showDatePickerDialog()
         }
@@ -399,5 +398,11 @@ class MapFragment : Fragment() , OnMapReadyCallback, LocationListener {
     override fun onLocationChanged(location: Location) {
         Timber.v("Location Changed ${location.latitude} and ${location.longitude}")
         locationManager.removeUpdates(this)
+    }
+
+    override fun onClick(v: View?) {
+        when(v!!.id) {
+            courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
+        }
     }
 }
