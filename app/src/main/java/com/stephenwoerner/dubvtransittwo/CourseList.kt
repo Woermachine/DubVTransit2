@@ -1,14 +1,14 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.app.ListActivity
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.ArrayAdapter
+import android.widget.ImageButton
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
@@ -18,7 +18,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.course_items.view.*
 import kotlinx.android.synthetic.main.course_lists.*
-import kotlin.collections.ArrayList
 
 /**
  * Created by srwoerner on 8/26/17.

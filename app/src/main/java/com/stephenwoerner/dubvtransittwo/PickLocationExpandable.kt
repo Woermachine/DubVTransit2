@@ -1,16 +1,20 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.SimpleExpandableListAdapter
+import androidx.fragment.app.Fragment
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.expandable_list_view.*
 
 /**
  * Control interface to pick locations
  * Created by srwoerner on 5/13/17.
  */
-class PickLocationExpandable : Activity() {
+class PickLocationExpandable : Fragment() {
 
     companion object {
         private const val NAME = "NAME"
@@ -26,10 +30,18 @@ class PickLocationExpandable : Activity() {
     private val groupItemsB = arrayOf("PRT Stations", "Campus Buildings", "Dorms", "Other")
     private val childItemsB = arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
 
-    public override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.expandable_list_view)
-        val useCourses = intent.getBooleanExtra("useCourses", true)
+    lateinit var navController: NavController
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.expandable_list_view, container, false)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        navController = Navigation.findNavController(view)
+
+        val useCourses = requireArguments().getBoolean("useCourses", true)
         if (!useCourses) {
             groupItems = groupItemsB
             childItems = childItemsB
@@ -50,7 +62,7 @@ class PickLocationExpandable : Activity() {
         childItems[2] = dormStrings.toTypedArray()
         if (useCourses) {
             val courseStrings = ArrayList<String>()
-            val courses = CourseDb.get(applicationContext).coursesQueries.selectAll().executeAsList()
+            val courses = CourseDb.get(requireContext().applicationContext).coursesQueries.selectAll().executeAsList()
             for (course in courses) {
                 courseStrings.add(course.course)
             }
@@ -80,7 +92,7 @@ class PickLocationExpandable : Activity() {
 
 
         // Set up the adapter
-        val mAdapter = SimpleExpandableListAdapter(this, groupData,
+        val mAdapter = SimpleExpandableListAdapter(requireContext(), groupData,
                 R.layout.group_items,
                 groupFrom, groupTo,
                 childData, R.layout.child_items,
@@ -91,10 +103,15 @@ class PickLocationExpandable : Activity() {
         expandable_list.setOnGroupClickListener { _, _, _, _ -> false }
         // perform set on child click listener event
         expandable_list.setOnChildClickListener{ _, _, groupPosition, childPosition, _ ->
-            val resultIntent = Intent()
-            resultIntent.putExtra("selected", childItems[groupPosition][childPosition])
-            setResult(RESULT_OK, resultIntent)
-            finish()
+//            val resultIntent = Intent()
+//            resultIntent.putExtra("selected", childItems[groupPosition][childPosition])
+//            setResult(RESULT_OK, resultIntent)
+//            finish()
+            val result = Bundle().apply {
+                putString("selected", childItems[groupPosition][childPosition])
+            }
+            parentFragmentManager.setFragmentResult("request_key", result)
+            navController.navigateUp()
             false
         }
     }

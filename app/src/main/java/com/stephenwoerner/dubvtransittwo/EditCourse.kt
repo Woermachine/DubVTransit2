@@ -1,17 +1,17 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.app.Activity
-import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.edit_course.*
 
 /**
@@ -19,13 +19,14 @@ import kotlinx.android.synthetic.main.edit_course.*
  *
  * Created by srwoerner on 9/22/17.
  */
-class EditCourse : Fragment() {
+class EditCourse : Fragment(), FragmentResultListener {
 //    private lateinit var courseDbAdapter: CourseDbAdapter
 
     private lateinit var navController: NavController
     private lateinit var courseDb: CourseDb
     private var rowId: Long = 0
     private lateinit var title: String
+    private var returned : String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.edit_course, container, false)
@@ -65,6 +66,11 @@ class EditCourse : Fragment() {
             showLocationList()
         }
         if (!isNew) fillData()
+
+        if(returned!=null)
+            startBtn.text = returned
+
+        parentFragmentManager.setFragmentResultListener("request_key", requireActivity(), this)
     }
 
     private fun fillData() {
@@ -78,20 +84,30 @@ class EditCourse : Fragment() {
     }
 
     private fun showLocationList() {
-        val intent = Intent(context, PickLocationExpandable::class.java)
-        intent.putExtra("useCourses", false)
-        val requestCode = 2
+//        val intent = Intent(context, PickLocationExpandable::class.java)
+//        intent.putExtra("useCourses", false)
+//        val requestCode = 2
         //TODO
 //        startActivityForResult(intent, requestCode)
+        val bundle = bundleOf(Pair("useCourses", false))
+        navController.navigate(R.id.action_editCourse_to_pickLocationExpandable, bundle)
     }
 
     fun onResult(requestCode: Int, resultCode: Int, data: Intent) {
         //TODO
-        super.onActivityResult(requestCode, resultCode, data)
-        if (requestCode == 2) {
-            if (resultCode == RESULT_OK) {
-                startBtn.text = data.getStringExtra("selected")
-            }
-        }
+//        super.onActivityResult(requestCode, resultCode, data)
+//        if (requestCode == 2) {
+//            if (resultCode == RESULT_OK) {
+//                startBtn.text = data.getStringExtra("selected")
+//            }
+//        }
+
+    }
+
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+//        val result = result.getString("selected")
+        Log.d("EditCourse", String.format("Hello %s", result.getString("selected")))
+        returned =  result.getString("selected")
+        // do something with the result
     }
 }

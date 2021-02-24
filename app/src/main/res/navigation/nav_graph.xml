@@ -16,6 +16,13 @@
             app:popExitAnim="@anim/slide_out_right"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"/>
+        <action
+            android:id="@+id/action_mapFragment_to_pickLocationExpandable"
+            app:destination="@id/pickLocationExpandable"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
     </fragment>
     <fragment
         android:id="@+id/courseList"
@@ -32,5 +39,17 @@
     <fragment
         android:id="@+id/editCourse"
         android:name="com.stephenwoerner.dubvtransittwo.EditCourse"
-        android:label="EditCourse" />
+        android:label="EditCourse" >
+        <action
+            android:id="@+id/action_editCourse_to_pickLocationExpandable"
+            app:destination="@id/pickLocationExpandable"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+    </fragment>
+    <fragment
+        android:id="@+id/pickLocationExpandable"
+        android:name="com.stephenwoerner.dubvtransittwo.PickLocationExpandable"
+        android:label="PickLocationExpandable" />
 </navigation>
