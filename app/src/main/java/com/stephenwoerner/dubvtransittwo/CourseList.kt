@@ -22,7 +22,7 @@ import kotlinx.android.synthetic.main.course_lists.*
 /**
  * Created by srwoerner on 8/26/17.
  */
-class CourseList : Fragment(), View.OnClickListener, CellClickListener {
+class CourseList : Fragment(), View.OnClickListener {
 
     //private String DEBUG = "CourseList";
 //    private var context: Context? = null
@@ -63,8 +63,8 @@ class CourseList : Fragment(), View.OnClickListener, CellClickListener {
         }
 //        course_list.notifyDataSe
 //        val adapter = CustomArrayAdapter(applicationContext, R.layout.course_items, courseArrayList)
-//        val a = CourseListAdapter(this, courseArrayList, this)
-//        listAdapter = adapter
+        val a = CourseListAdapter( courseArrayList)
+        course_list.adapter = a
     }
 
     private inner class CustomArrayAdapter<T>(context: Context, textViewResourceId: Int, var categories: ArrayList<T>) : ArrayAdapter<T>(context, textViewResourceId, categories) {
@@ -102,7 +102,7 @@ class CourseList : Fragment(), View.OnClickListener, CellClickListener {
     }
 
 
-    class CourseListAdapter(val dataList : ArrayList<String>) : RecyclerView.Adapter<CourseListViewHolder>() {
+    private inner class CourseListAdapter(val dataList : ArrayList<String>) : RecyclerView.Adapter<CourseListViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseListViewHolder {
             val dirLayout = LayoutInflater.from(parent.context).inflate(R.layout.course_items, parent, false) as RelativeLayout
@@ -113,9 +113,19 @@ class CourseList : Fragment(), View.OnClickListener, CellClickListener {
             holder.textView.text = dataList[position]
 
             holder.deleteButton.setOnClickListener {
-//                mDb.coursesQueries.deleteByCourse(dataList[position])
-//                fillData()
+                mDb.coursesQueries.deleteByCourse(dataList[position])
+//                val theRemovedItem = dataList.get(position);
+                // remove your item from data base
+                dataList.removeAt(position)  // remove the item from list
+                notifyItemRemoved(position)
+                notifyDataSetChanged()
             }
+
+            holder.cellBackground.setOnClickListener {
+                val bundle = bundleOf(Pair("isNew", false), Pair("title", courseArrayList[position]))
+                navController.navigate(R.id.action_courseList_to_editCourse, bundle)
+            }
+
         }
 
         override fun getItemCount(): Int {
@@ -126,15 +136,18 @@ class CourseList : Fragment(), View.OnClickListener, CellClickListener {
     class CourseListViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
         val textView : TextView = view.findViewById(R.id.course_title)
         val deleteButton : ImageButton = view.findViewById(R.id.delete_button)
+        val cellBackground : View = view.findViewById(R.id.cell)
     }
 
-    override fun onCellClickListener(position : Int) {
-        TODO("Not yet implemented")
-    }
-
-    override fun onDeleteClickListener(position: Int) {
-        TODO("Not yet implemented")
-    }
+//    override fun onCellClickListener(position : Int) {
+//        val bundle = bundleOf(Pair("isNew", false), Pair("title", courseArrayList[position]))
+//        navController.navigate(R.id.action_courseList_to_editCourse, bundle)
+//
+//    }
+//
+//    override fun onDeleteClickListener(position: Int) {
+//        TODO("Not yet implemented")
+//    }
 
     override fun onClick(v: View?) {
         when(v!!.id){

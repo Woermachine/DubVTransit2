@@ -46,5 +46,6 @@
         android:clickable="true"
         android:focusable="true"
         android:src="@android:drawable/ic_input_add"
-        android:tint="@android:color/white"/>
+        android:tint="@android:color/white"
+        android:contentDescription="@string/add_course_button_desc" />
 </RelativeLayout>

@@ -60,5 +60,8 @@
     <string name="course_destination">Destination</string>
     <string name="course_list_title">My Courses</string>
     <string name="course_delete">Delete this course</string>
+    <string name="save_button_desc">save button</string>
+    <string name="add_course_button_desc">add course button</string>
+    <string name="delete_course_desc">delete course</string>
 
 </resources>

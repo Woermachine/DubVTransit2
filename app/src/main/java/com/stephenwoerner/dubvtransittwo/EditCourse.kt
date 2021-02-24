@@ -46,22 +46,22 @@ class EditCourse : Fragment(), FragmentResultListener {
             childFragmentManager.popBackStack()
         }
 
-        courseDb = CourseDb.get(requireContext())
+        courseDb = CourseDb.get(requireContext().applicationContext)
 
-        done_button.setOnClickListener(object : View.OnClickListener {
-            override fun onClick(view: View) {
-                run {
-                    if (isNew)
-                        courseDb.coursesQueries.insert(course = editable_course_title.text.toString(),
-                            location = startBtn.text.toString(), note = course_note.text.toString())
-                    else
-                        courseDb.coursesQueries.update( course = editable_course_title.text.toString(),
-                            location =  startBtn.text.toString(),note = course_note.text.toString(),
-                            _id = rowId,)
-                    childFragmentManager.popBackStack()
-                }
-            }
-        })
+        done_button.setOnClickListener {
+            //                run {
+            if (isNew)
+                courseDb.coursesQueries.insert(course = editable_course_title.text.toString(),
+                        location = startBtn.text.toString(), note = course_note.text.toString())
+            else
+                courseDb.coursesQueries.update(
+                        course = editable_course_title.text.toString(),
+                        location = startBtn.text.toString(), note = course_note.text.toString(),
+                        _id = rowId,
+                )
+            navController.navigateUp()
+//                }
+        }
         startBtn.setOnClickListener {
             showLocationList()
         }

@@ -4,7 +4,8 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tool="http://schemas.android.com/tools"
-    android:padding="5dp">
+    android:padding="5dp"
+    android:id="@+id/cell">
 
     <TextView
         android:id="@+id/course_title"
@@ -26,7 +27,8 @@
         app:srcCompat="@android:drawable/ic_menu_delete"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        style="@style/Widget.AppCompat.Button.Borderless"/>
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:contentDescription="@string/delete_course_desc" />
 
 
 </RelativeLayout>
