@@ -12,20 +12,16 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.CheckBox
-import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -34,7 +30,6 @@ import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -43,12 +38,16 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
-val TAG = MapFragment::class.java.simpleName
+val TAG: String = MapFragment::class.java.simpleName
 /**
  * Allows user to specify an origin, destination, and departure
  */
 class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, LocationListener, FragmentResultListener {
-    private val requestKey = "key_$TAG"
+
+    companion object {
+        val requestKey = "key_$TAG"
+    }
+
     private lateinit var leavingTime: Calendar
     private lateinit var model: PRTModel
 
@@ -61,6 +60,7 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
     private lateinit var mMap: GoogleMap
 
     lateinit var navController: NavController
+    private val viewModel: MyViewModel by activityViewModels()
 
     private val location: com.google.maps.model.LatLng
         get() {
@@ -107,6 +107,7 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         navController = Navigation.findNavController(view)
         parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
 
@@ -117,13 +118,19 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
         CoroutineScope(Dispatchers.IO).launch {
             model.requestPRTStatus()
         }
+
+        viewModel.destination.observe(viewLifecycleOwner, { item ->
+            destBtn.text = item
+        })
         destBtn.setOnClickListener { showLocationList(it) }
 
+        viewModel.source.observe(viewLifecycleOwner, { item ->
+            startBtn.text = item
+        })
         startBtn.setOnClickListener { showLocationList(it) }
 
         leavingTime = Calendar.getInstance()
         timeBtn.text = timeFormat.format(leavingTime.time)
-
         dateBtn.text = dateFormat.format(leavingTime.time)
 
         useCurrentTimeCB.setOnClickListener {
@@ -208,58 +215,22 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      */
     private fun showLocationList(v: View) {
         val requestCode = v.id
-        val bundle = bundleOf(Pair("request_code", requestCode))
+        val bundle = bundleOf(Pair(PickLocationExpandable.requestKeyArgKey, requestKey),
+            Pair(PickLocationExpandable.requestCodeArgKey, requestCode))
         navController.navigate(R.id.action_mapFragment_to_pickLocationExpandable, bundle)
     }
 
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when(requestKey) {
-            this.requestKey -> {
-                Timber.d(String.format("Hello %s", result.getString("selected")))
-                //TODO
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)  {
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (resultCode == AppCompatActivity.RESULT_OK) {
-            val selected = data!!.getStringExtra("selected")!!
-            when (requestCode) {
-                0 -> {
-                    destBtn?.text = selected
-                }
-                1 -> {
-                    startBtn?.text = selected
+            MapFragment.requestKey -> {
+                val requestCode = result.getInt(PickLocationExpandable.requestCodeArgKey)
+                val selected = result.getString(PickLocationExpandable.returnVal)!!
+                Timber.d(String.format("PickLocationExpandable returned: %s %s", requestCode , selected))
+                when(requestCode) {
+                    R.id.destBtn -> viewModel.setDestination(selected)
+                    R.id.startBtn -> viewModel.setSource(selected)
                 }
             }
-
-            mMap.clear()
-
-            val destStr = destBtn?.text.toString()
-            val destLoc = model.findLatLng(destStr, location, requireContext().applicationContext)
-            destLoc?.let {
-                val destLatLng = LatLng(it.lat, it.lng)
-                mMap.addMarker(
-                    MarkerOptions()
-                        .position(destLatLng)
-                        .title(destStr)
-                )
-            }
-
-
-            val startStr = startBtn?.text.toString()
-            val startLoc = model.findLatLng(startStr, location, requireContext().applicationContext)
-            startLoc?.let {
-                val startLatLng = LatLng(it.lat, it.lng)
-                mMap.addMarker(
-                    MarkerOptions()
-                        .position(startLatLng)
-                        .title(startStr)
-                )
-            }
-
         }
     }
 
@@ -363,6 +334,31 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
         mMap = googleMap
 
         mMap.uiSettings.isMapToolbarEnabled = false
+
+        mMap.clear()
+        viewModel.destination.observe(viewLifecycleOwner, { item ->
+            val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
+            destLoc?.let {
+                val destLatLng = LatLng(it.lat, it.lng)
+                mMap.addMarker(
+                    MarkerOptions()
+                        .position(destLatLng)
+                        .title(item)
+                )
+            }
+        })
+
+        viewModel.source.observe(viewLifecycleOwner, { item ->
+            val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
+            startLoc?.let {
+                val startLatLng = LatLng(it.lat, it.lng)
+                mMap.addMarker(
+                    MarkerOptions()
+                        .position(startLatLng)
+                        .title(item)
+                )
+            }
+        })
 //        val allPointsHM = model.allHashMap
 //        model.allHashMap.keys.forEach { placeName ->
 //            val loc = allPointsHM[placeName]!!

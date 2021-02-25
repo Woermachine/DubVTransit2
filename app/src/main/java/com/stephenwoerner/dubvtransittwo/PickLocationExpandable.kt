@@ -19,6 +19,7 @@ class PickLocationExpandable : Fragment() {
 
     companion object {
         const val requestKeyArgKey = "requestKey"
+        const val requestCodeArgKey = "requestCode"
         const val returnVal = "selected"
         const val useCourses = "useCourses"
     }
@@ -35,24 +36,28 @@ class PickLocationExpandable : Fragment() {
     private val childItemsB = arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
 
     lateinit var navController: NavController
-    lateinit var requestKey :String
+    lateinit var requestKey: String
+    var requestCode : Int? = null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.expandable_list_view, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        val args = requireArguments()
 
         navController = Navigation.findNavController(view)
-        requireArguments().getString(requestKeyArgKey)?.let{
+        args.getString(requestKeyArgKey)?.let{
             requestKey = it
         } ?: run {
             Timber.e("No Request Key")
             navController.navigateUp()
         }
 
+        if(args.containsKey(requestCodeArgKey))
+            requestCode = args.getInt(requestCodeArgKey)
 
-        val useCourses = requireArguments().getBoolean(useCourses, true)
+        val useCourses = args.getBoolean(useCourses, true)
         if (!useCourses) {
             groupItems = groupItemsB
             childItems = childItemsB
@@ -120,8 +125,9 @@ class PickLocationExpandable : Fragment() {
 //            finish()
             val result = Bundle().apply {
                 putString(returnVal, childItems[groupPosition][childPosition])
+                requestCode?.let { putInt(requestCodeArgKey, it) }
             }
-            parentFragmentManager.setFragmentResult(EditCourse.requestKey, result)
+            parentFragmentManager.setFragmentResult(requestKey, result)
             navController.navigateUp()
             false
         }

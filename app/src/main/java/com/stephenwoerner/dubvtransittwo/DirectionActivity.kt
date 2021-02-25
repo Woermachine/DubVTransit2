@@ -249,7 +249,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
         val selectedColor = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonSelected))
         list2.adapter = when (v.id) {
             R.id.busButton -> {
-                prtButton.background = selectedColor
+                busButton.background = selectedColor
                 busDirections
             }
             R.id.walkButton -> {

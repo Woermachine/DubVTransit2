@@ -4,27 +4,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 
 class MyViewModel : ViewModel() {
-    lateinit var destination: MutableLiveData<String>
-    lateinit var source: MutableLiveData<String>
+    var destination: MutableLiveData<String> = MutableLiveData()
+    var source: MutableLiveData<String> = MutableLiveData()
 
     init {
-        destination.value = "Un"
+        destination.value = "Destination"
         source.value = "Current Location"
-    }
-
-    fun getSource(): String {
-        return source.value!!
     }
 
     fun setSource(dest : String) {
         source.value = dest
     }
 
-    fun getDestination(): String {
-        return source.value!!
-    }
-
     fun setDestination(dest : String) {
-        source.value = dest
+        destination.value = dest
     }
 }

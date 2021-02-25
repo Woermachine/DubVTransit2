@@ -27,6 +27,15 @@ android {
         resValue "string", "maps_api_key", (apiKeyProperties.getProperty("MAPS_KEY") ?: "")
     }
 
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
     buildTypes {
         release {
             minifyEnabled false
