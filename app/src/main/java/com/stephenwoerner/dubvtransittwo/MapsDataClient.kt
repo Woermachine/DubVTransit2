@@ -52,27 +52,43 @@ class MapsDataClient {
         val deferredWalk = GlobalScope.async {
             val walkingResult = DirectionsApi.newRequest(geoContext).origin(origin).destination(destination).departureTime(instant).mode(TravelMode.WALKING).await()
             wSAD = getStepsAndDuration(walkingResult)
-            "prt"
+
+            "walk"
         }
 
        val deferredPrt = GlobalScope.async {
-            val prtResultA = DirectionsApi.newRequest(geoContext).origin(origin).destination(closestPRTAStr).departureTime(instant).mode(TravelMode.WALKING).await()
-            val prtResultB = DirectionsApi.newRequest(geoContext).origin(closestPRTBStr).destination(destination).departureTime(instant).mode(TravelMode.WALKING).await()
+           model.requestPRTStatus()
+           if(model.isOpenNow()) {
+               val prtResultA = DirectionsApi.newRequest(geoContext).origin(origin).destination(closestPRTAStr).departureTime(instant).mode(TravelMode.WALKING).await()
+               val prtResultB = DirectionsApi.newRequest(geoContext).origin(closestPRTBStr).destination(destination).departureTime(instant).mode(TravelMode.WALKING).await()
+               val pSADA = getStepsAndDuration(prtResultA)
+               val pSADB = getStepsAndDuration(prtResultB)
 
-            val pSADA = getStepsAndDuration(prtResultA)
-            val pSADB = getStepsAndDuration(prtResultB)
+               val prtDirection = "Ride Prt from $closestPRTA to $closestPRTB"
+               val prtDuration = Duration()
+               prtDuration.inSeconds = model.estimateTime(closestPRTA, closestPRTB, leavingTime).toLong()
+               prtDuration.humanReadable = "${prtDuration.inSeconds} seconds"
 
 
-            var prtDuration = pSADA.duration
-            prtDuration += model.estimateTime(closestPRTA, closestPRTB, leavingTime).toInt()
-            prtDuration += pSADB.duration
+               var fullDir = pSADA.duration
+               fullDir += prtDuration.inSeconds.toInt()
+               fullDir += pSADB.duration
 
-            pSAD = StepsAndDuration(ArrayList(), prtDuration)
+               pSAD = StepsAndDuration(ArrayList(), fullDir, true)
 
-            pSAD.directions.addAll(pSADA.directions)
-            pSAD.directions.add("Ride Prt from $closestPRTA to $closestPRTB")
-            pSAD.directions.addAll(pSADB.directions)
-            "prt"
+               pSAD.directions.addAll(pSADA.directions)
+               pSAD.directions.add(SimpleDirections(prtDirection, null, prtDuration))
+               pSAD.directions.addAll(pSADB.directions)
+           } else {
+               val noPRTAL = arrayListOf<SimpleDirections>()
+               val dur = Duration()
+               dur.inSeconds = 0
+               dur.humanReadable = "0 seconds"
+               noPRTAL.add(SimpleDirections("The PRT is currently closed",null, null))
+               pSAD = StepsAndDuration(noPRTAL, 0, false)
+           }
+
+           "prt"
         }
 
 
@@ -80,18 +96,18 @@ class MapsDataClient {
 
 
         var fastest = cSAD.duration
-        var fastestRoute = DirectionActivity.Route.CAR
+        var fastestRoute = DirectionFragment.Route.CAR
 
-        if (bSAD.duration < fastest) {
+        if (bSAD.isAvailable && bSAD.duration < fastest) {
             fastest = bSAD.duration
-            fastestRoute = DirectionActivity.Route.BUS
+            fastestRoute = DirectionFragment.Route.BUS
         }
-        if (wSAD.duration < fastest) {
+        if (wSAD.isAvailable && wSAD.duration < fastest) {
             fastest = wSAD.duration
-            fastestRoute = DirectionActivity.Route.WALK
+            fastestRoute = DirectionFragment.Route.WALK
         }
-        if (pSAD.duration < fastest) {
-            fastestRoute = DirectionActivity.Route.PRT
+        if (pSAD.isAvailable && pSAD.duration < fastest) {
+            fastestRoute = DirectionFragment.Route.PRT
         }
 
         return MapsTaskResults(
@@ -107,31 +123,34 @@ class MapsDataClient {
     }
 
     private fun formatInstruct(step : DirectionsStep) : String {
-        return  """${step.htmlInstructions.replace("<[^>]*>".toRegex(), "")}${step.distance}""".trimIndent()
+        return  step.htmlInstructions.replace("<[^>]*>".toRegex(), "").trimIndent()
     }
 
     private fun getStepsAndDuration(dr : DirectionsResult) : StepsAndDuration {
-        val directions = arrayListOf<String>()
+        val directions = arrayListOf<SimpleDirections>()
         var duration = 0
-        if(dr.routes.isEmpty()) {
-            directions.add("No routes found")
-            duration = Int.MAX_VALUE
-        } else {
-            dr.routes[0].legs.forEach { leg ->
-                leg.steps.forEach {
-                    directions.add(formatInstruct(it))
+        val isAvailable = dr.routes.isNotEmpty()
+        if(isAvailable) {
+            dr.routes[0]?.legs?.forEach { leg ->
+                leg.steps?.forEach {
+                    directions.add(SimpleDirections(formatInstruct(it), it.distance, it.duration))
                 }
                 duration += leg.duration.inSeconds.toInt()
             }
+        } else {
+            directions.add(SimpleDirections("Currently unavailable", null, null))
         }
-        return StepsAndDuration(directions, duration)
+        return StepsAndDuration(directions, duration, isAvailable)
     }
 
-    data class StepsAndDuration(val directions : ArrayList<String>, val duration: Int)
+
+    data class SimpleDirections(val direction: String, val stepDistance: Distance?, val stepDuration: Duration?)
+
+    data class StepsAndDuration(val directions : ArrayList<SimpleDirections>, val duration: Int, val isAvailable : Boolean)
 
     data class MapsTaskResults(val carStepsAndDuration: StepsAndDuration, val busStepsAndDuration: StepsAndDuration,
                                val walkStepsAndDuration: StepsAndDuration, val prtStepsAndDuration: StepsAndDuration,
-                               val fastestRoute : DirectionActivity.Route, val closestPRTA : String,
+                               val fastestRoute : DirectionFragment.Route, val closestPRTA : String,
                                val closestPRTB : String, val leavingTime : Long)
 
 }

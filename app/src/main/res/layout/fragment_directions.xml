@@ -42,7 +42,7 @@
 
 
 
-    <ListView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list2"
         android:contentDescription="@string/directions"
         android:layout_width="match_parent"
@@ -75,7 +75,6 @@
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:drawableTop="@mipmap/bus_icon"
-            android:onClick="changeSelected"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
             android:paddingTop="5dp"
@@ -89,7 +88,6 @@
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:drawableTop="@mipmap/prt_icon"
-            android:onClick="changeSelected"
             android:scaleType="fitXY"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
@@ -104,7 +102,6 @@
             android:layout_weight="1"
             android:background="#FFFFFF"
             android:drawableTop="@mipmap/walking"
-            android:onClick="changeSelected"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
             android:paddingTop="5dp"
@@ -119,7 +116,6 @@
             android:background="#FFFFFF"
             android:drawableTop="@mipmap/car_icon"
             android:elevation="0dp"
-            android:onClick="changeSelected"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
             android:paddingTop="5dp"

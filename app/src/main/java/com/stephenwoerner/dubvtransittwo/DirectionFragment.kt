@@ -13,24 +13,31 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.net.Uri
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.view.Window
-import android.widget.ArrayAdapter
+import android.view.ViewGroup
 import android.widget.ProgressBar
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.maps.model.LatLng
-import kotlinx.android.synthetic.main.display_layout.*
+import kotlinx.android.synthetic.main.fragment_directions.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.util.*
+import kotlin.collections.ArrayList
 import kotlin.math.*
 
-class DirectionActivity : AppCompatActivity(), LocationListener {
+class DirectionFragment : Fragment(), LocationListener {
 
     enum class Route { CAR, BUS, WALK, PRT }
 
@@ -46,23 +53,27 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
 
     private lateinit var locationManager : LocationManager
 
-    private lateinit var carDirections : ArrayList<String>
-    private lateinit var busDirections : ArrayList<String>
-    private lateinit var walkingDirections : ArrayList<String>
-    private lateinit var prtDirections : ArrayList<String>
+    private lateinit var carDirections : DirectionAdapter
+    private lateinit var busDirections : DirectionAdapter
+    private lateinit var walkingDirections : DirectionAdapter
+    private lateinit var prtDirections : DirectionAdapter
+
     private var leavingTimeMillis : Long = 0L
-    private var context = this@DirectionActivity
+//    private var context = this@DirectionActivity
     private val model = PRTModel.get()
 
     private val mapsDataClient = MapsDataClient()
 
+    lateinit var navController: NavController
+    private val viewModel: MyViewModel by activityViewModels()
+
     private val location: LatLng
         get() {
             var currentLocation = LatLng(0.0, 0.0)
-            locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(
-                    this,
+                    requireActivity(),
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     1
                 )
@@ -94,35 +105,50 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
                 val hundredMilesInKM = 160.934
 
                 if( getDistanceFromLatLonInKm(morgantown.lat, morgantown.lng, lat, lon) > hundredMilesInKM ) {
-                    finish()
+                    navController.navigateUp()
                 }
 
             }
             return currentLocation
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_directions, container, false)
+    }
 
-        window.requestFeature(Window.FEATURE_ACTION_BAR)
-        supportActionBar?.hide()
-        setContentView(R.layout.display_layout)
-        context = this@DirectionActivity
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val viewModel = ViewModelProvider(this).get(DirectionViewModel::class.java)
+        navController = Navigation.findNavController(view)
+
+        walkButton.setOnClickListener {
+            changeSelected(it)
+        }
+
+        busButton.setOnClickListener {
+            changeSelected(it)
+        }
+
+        prtButton.setOnClickListener {
+            changeSelected(it)
+        }
+
+        carButton.setOnClickListener {
+            changeSelected(it)
+        }
 
         var originStr = ""
         try {
-            originStr = intent.getStringExtra("origin")!!
-            destinationStr = intent.getStringExtra("destination")!!
-            useCurrentTime = intent.getBooleanExtra("useCurrentTime", true)
-            leavingTimeMillis =  intent.getLongExtra(
+            originStr = requireArguments().getString("origin")!!
+            destinationStr = requireArguments().getString("destination")!!
+            useCurrentTime = requireArguments().getBoolean("useCurrentTime", true)
+            leavingTimeMillis =  requireArguments().getLong(
                 "leavingTime",
                 Calendar.getInstance().timeInMillis
             )
         } catch (e: NullPointerException) {
             Timber.e(e)
-            finish()
+            navController.navigateUp()
         }
 
         val displayOrigin = "From: $originStr"
@@ -137,7 +163,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
                 val lookupString = if(model.allHashMap.containsKey(originStr)) {
                     originStr
                 } else {
-                    val courseDb = CourseDb.get(applicationContext)
+                    val courseDb = CourseDb.get(requireContext().applicationContext)
                     val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
                     course.location
                 }
@@ -146,12 +172,12 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
         }
 
         if (!model.allHashMap.containsKey(destinationStr)) { //If its not in the HashMap then its a user course
-            val courseDb = CourseDb.get(applicationContext)
+            val courseDb = CourseDb.get(requireContext().applicationContext)
             val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
             destinationStr = course.location
         }
         destination = model.allHashMap[destinationStr]!!
-        navigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton(
+        navigationButton.setOnClickListener { AlertDialog.Builder(requireContext()).setView(R.layout.alert_contents).setNegativeButton(
             "Cancel"
         ) { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(
             R.drawable.ic_navigation_black_36dp
@@ -169,7 +195,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
                 destination
             )
 
-            runOnUiThread {
+            requireActivity().runOnUiThread {
                 onResults(results)
             }
         }
@@ -179,40 +205,36 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
 
         progress.visibility = View.GONE
 
-        busDirections = mapsTaskResults.busStepsAndDuration.directions
-        walkingDirections = mapsTaskResults.walkStepsAndDuration.directions
-        prtDirections = mapsTaskResults.prtStepsAndDuration.directions
-        carDirections = mapsTaskResults.carStepsAndDuration.directions
+        busDirections = DirectionAdapter(mapsTaskResults.busStepsAndDuration.directions)
+        walkingDirections = DirectionAdapter(mapsTaskResults.walkStepsAndDuration.directions)
+        prtDirections = DirectionAdapter(mapsTaskResults.prtStepsAndDuration.directions)
+        carDirections = DirectionAdapter(mapsTaskResults.carStepsAndDuration.directions)
         closestPRTA = mapsTaskResults.closestPRTA
         closestPRTB = mapsTaskResults.closestPRTB
         leavingTime = mapsTaskResults.leavingTime
 
         val directionsStepArrayAdapter = when (mapsTaskResults.fastestRoute) {
-            Route.BUS -> {
-                ArrayAdapter(context, R.layout.list_item, busDirections)
-            }
-            Route.WALK -> {
-                ArrayAdapter(context, R.layout.list_item, walkingDirections)
-            }
-            Route.PRT -> {
-                ArrayAdapter(context, R.layout.list_item, prtDirections)
-            }
-            else -> {
-                ArrayAdapter(context, R.layout.list_item, carDirections)
-            }
+            Route.BUS -> busDirections
+            Route.WALK -> walkingDirections
+            Route.PRT -> prtDirections
+            else -> carDirections
         }
 
         val btnSelectColor = getMuhDrawable(R.color.ButtonSelected)
 
-        val busButtonText = "${mapsTaskResults.busStepsAndDuration.duration / 60} min"
-        val walkingButtonText = "${ mapsTaskResults.walkStepsAndDuration.duration / 60} min"
-        val prtButtonText = "${ mapsTaskResults.prtStepsAndDuration.duration / 60} min"
-        val carButtonText = "${ mapsTaskResults.carStepsAndDuration.duration / 60} min"
+        fun getButtonText(stepsAndDur : MapsDataClient.StepsAndDuration) : String {
+            if(stepsAndDur.isAvailable) {
+                return "${stepsAndDur.duration / 60} min"
+            }
+            return ""
+        }
 
-        busButton.text = busButtonText
-        walkButton.text = walkingButtonText
-        prtButton.text = prtButtonText
-        carButton.text = carButtonText
+        busButton.text = getButtonText(mapsTaskResults.busStepsAndDuration)
+        walkButton.text = getButtonText(mapsTaskResults.walkStepsAndDuration)
+        prtButton.text = getButtonText(mapsTaskResults.prtStepsAndDuration)
+        carButton.text = getButtonText( mapsTaskResults.carStepsAndDuration)
+
+        list2.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL,false)
         list2.adapter = directionsStepArrayAdapter
         prtBadge.background = prtButtonColor()
 
@@ -237,29 +259,29 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
      * @param v the button which was pressed
      */
     fun changeSelected(v: View) {
-        val unselected = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonUnselected))
+        val unselected = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonUnselected))
         carButton.background = unselected
         prtButton.background = unselected
         walkButton.background = unselected
         busButton.background = unselected
 
-        val selectedColor = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonSelected))
+        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonSelected))
         list2.adapter = when (v.id) {
             R.id.busButton -> {
-                prtButton.background = selectedColor
-                ArrayAdapter(this, R.layout.list_item, busDirections)
+                busButton.background = selectedColor
+                busDirections
             }
             R.id.walkButton -> {
                 walkButton.background = selectedColor
-                ArrayAdapter(this, R.layout.list_item, walkingDirections)
+                walkingDirections
             }
             R.id.prtButton -> {
                 prtButton.background = selectedColor
-                ArrayAdapter(this, R.layout.list_item, prtDirections)
+                prtDirections
             }
             else -> { // Assume Car
                 carButton.background = selectedColor
-                ArrayAdapter(this, R.layout.list_item, carDirections)
+                carDirections
             }
         }
     }
@@ -273,7 +295,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
         locationManager.removeUpdates(this)
     }
 
-    public override fun onPause() {
+    override fun onPause() {
         super.onPause()
         progress.visibility = View.GONE
     }
@@ -295,7 +317,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
             }
         }
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-        context.startActivity(intent)
+        requireActivity().startActivity(intent)
     }
 
     private fun prtButtonColor() : Drawable {
@@ -303,14 +325,14 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
             getMuhDrawable(R.drawable.rounded_textview_yellow)
         else if (useCurrentTime && model.openBetweenStations(closestPRTA, closestPRTB) && model.status != "7")
             getMuhDrawable(R.drawable.rounded_textview_yellow)
-        else if (model.isOpen(leavingTime) || model.status == "1")
+        else if (model.status == "1")
             getMuhDrawable(R.drawable.rounded_textview_green)
         else
             getMuhDrawable(R.drawable.rounded_textview_red)
     }
 
     private fun getMuhDrawable(id: Int) : Drawable {
-        return ContextCompat.getDrawable(applicationContext, id)!!
+        return ContextCompat.getDrawable(requireContext().applicationContext, id)!!
     }
 
     // Required functions
@@ -344,5 +366,41 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
 
     private fun deg2rad(deg: Double) : Double {
         return deg * (PI / 180.0)
+    }
+
+    class DirectionAdapter(val dataList : ArrayList<MapsDataClient.SimpleDirections>) : RecyclerView.Adapter<DirectionsViewHolder>() {
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DirectionsViewHolder {
+            val dirLayout = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false) as RelativeLayout
+            return DirectionsViewHolder(dirLayout)
+        }
+
+        override fun onBindViewHolder(holder: DirectionsViewHolder, position: Int) {
+            holder.textView.text = dataList[position].direction
+
+            dataList[position].stepDistance?.let {
+                holder.distance.visibility = View.VISIBLE
+                holder.distance.text = it.toString()
+            } ?: run {
+                holder.distance.visibility = View.GONE
+            }
+
+            dataList[position].stepDuration?.let {
+                holder.duration.visibility = View.VISIBLE
+                holder.duration.text = it.toString()
+            } ?: run {
+                holder.duration.visibility = View.GONE
+            }
+        }
+
+        override fun getItemCount(): Int {
+            return dataList.size
+        }
+    }
+
+    class DirectionsViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
+        val textView : TextView = view.findViewById(R.id.list_item)
+        val distance : TextView = view.findViewById(R.id.distance)
+        val duration : TextView = view.findViewById(R.id.duration)
     }
 }

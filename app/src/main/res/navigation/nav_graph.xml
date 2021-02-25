@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mapFragment">
+    <fragment
+        android:id="@+id/mapFragment"
+        android:name="com.stephenwoerner.dubvtransittwo.MapFragment"
+        android:label="fragment_map"
+        tools:layout="@layout/fragment_map" >
+        <action
+            android:id="@+id/action_mapFragment_to_courseList"
+            app:destination="@id/courseList"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+        <action
+            android:id="@+id/action_mapFragment_to_pickLocationExpandable"
+            app:destination="@id/pickLocationExpandable"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+        <action
+            android:id="@+id/action_mapFragment_to_directionFragment"
+            app:destination="@id/directionFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/courseList"
+        android:name="com.stephenwoerner.dubvtransittwo.CourseListFragment"
+        android:label="CourseList"
+        tools:layout="@layout/fragment_course_lists" >
+        <action
+            android:id="@+id/action_courseList_to_editCourse"
+            app:destination="@id/editCourse"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+    </fragment>
+    <fragment
+        android:id="@+id/editCourse"
+        android:name="com.stephenwoerner.dubvtransittwo.EditCourseFragment"
+        android:label="EditCourse"
+        tools:layout="@layout/fragment_edit_course" >
+        <action
+            android:id="@+id/action_editCourse_to_pickLocationExpandable"
+            app:destination="@id/pickLocationExpandable"
+            app:popEnterAnim="@anim/slide_in_left"
+            app:popExitAnim="@anim/slide_out_right"
+            app:enterAnim="@anim/slide_in_right"
+            app:exitAnim="@anim/slide_out_left"/>
+    </fragment>
+    <fragment
+        android:id="@+id/pickLocationExpandable"
+        android:name="com.stephenwoerner.dubvtransittwo.LocationListFragment"
+        android:label="PickLocationExpandable"
+        tools:layout="@layout/fragment_location_list"/>
+    <fragment
+        android:id="@+id/directionFragment"
+        android:name="com.stephenwoerner.dubvtransittwo.DirectionFragment"
+        android:label="DirectionFragment" />
+</navigation>

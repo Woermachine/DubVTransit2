@@ -13,7 +13,9 @@ import kotlin.collections.HashMap
 import kotlin.math.pow
 
 class PRTModel private constructor() {
-    var status = "0"
+    val PRT_STATUS_CLOSED = "7"
+
+    var status : String? = PRT_STATUS_CLOSED
     var message = ""
     private lateinit var duration : Array<String>
     private var busesDispatched = ""
@@ -43,7 +45,7 @@ class PRTModel private constructor() {
 
         val dateTime = DateTime.fromUnix(timeInMillis)
         //Wait Time
-        if (prtStationA == prtStationB) return 0.0
+        if (prtStationA == prtStationB) return -1.0
         var time = 3.0
         when (dateTime.dayOfWeek) {
             DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday -> if (dateTime.minutes > 45 || dateTime.minutes < 5) time += 7.0
@@ -87,7 +89,7 @@ class PRTModel private constructor() {
 
         val departingTime = DateTime.fromUnix(departingTimeInMillis)
 
-        println( "${DirectionActivity::class.simpleName} Open at calendar time ${departingTime.hours}:${departingTime.minutes}")
+        println( "${DirectionFragment::class.simpleName} Open at calendar time ${departingTime.hours}:${departingTime.minutes}")
         return when (departingTime.dayOfWeek) {
             DayOfWeek.Sunday -> false
             DayOfWeek.Saturday -> {
@@ -103,6 +105,10 @@ class PRTModel private constructor() {
                 hourOfDay in 6..22 || (hourOfDay == 5 && min > 30)
             }
         }
+    }
+
+    fun isOpenNow() : Boolean {
+        return status == "1"
     }
 
 
