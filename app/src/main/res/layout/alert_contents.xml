@@ -3,20 +3,20 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginBottom="10dp">
+
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_toStartOf="@+id/middle">
+
         <TextView
             android:id="@+id/option_prt"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
-            android:text="@string/alert_option_prt"
-            android:onClick="openMaps"
-            android:gravity="center"
             android:layout_centerInParent="true"
-           />
+            android:gravity="center"
+            android:text="@string/alert_option_prt" />
     </RelativeLayout>
 
 
@@ -24,20 +24,20 @@
         android:id="@+id/middle"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_centerInParent="true"/>
+        android:layout_centerInParent="true" />
 
     <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentEnd="true"
-        android:layout_toEndOf="@+id/middle" >
+        android:layout_toEndOf="@+id/middle">
+
         <TextView
             android:id="@+id/option_dest"
             android:layout_width="wrap_content"
             android:layout_height="30dp"
-            android:text="@string/alert_option_dest"
+            android:layout_centerInParent="true"
             android:gravity="center"
-            android:onClick="openMaps"
-            android:layout_centerInParent="true"/>
+            android:text="@string/alert_option_dest" />
     </RelativeLayout>
 </RelativeLayout>

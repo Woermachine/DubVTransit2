@@ -25,9 +25,12 @@ class LocationListFragment : Fragment() {
     }
 
     private val NAME = "NAME"
+
     // string arrays for group and child items
-    private var groupItems = arrayOf("PRT Stations", "Campus Buildings", "Dorms", "My Classes", "Other")
-    private var childItems = arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
+    private var groupItems =
+        arrayOf("PRT Stations", "Campus Buildings", "Dorms", "My Classes", "Other")
+    private var childItems =
+        arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
     private val groupData: MutableList<Map<String, String?>> = ArrayList()
     private val childData: MutableList<List<Map<String, String?>>> = ArrayList()
 
@@ -37,8 +40,12 @@ class LocationListFragment : Fragment() {
 
     lateinit var navController: NavController
     lateinit var requestKey: String
-    var requestCode : Int? = null
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    var requestCode: Int? = null
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_location_list, container, false)
     }
 
@@ -47,14 +54,14 @@ class LocationListFragment : Fragment() {
         val args = requireArguments()
 
         navController = Navigation.findNavController(view)
-        args.getString(requestKeyArgKey)?.let{
+        args.getString(requestKeyArgKey)?.let {
             requestKey = it
         } ?: run {
             Timber.e("No Request Key")
             navController.navigateUp()
         }
 
-        if(args.containsKey(requestCodeArgKey))
+        if (args.containsKey(requestCodeArgKey))
             requestCode = args.getInt(requestCodeArgKey)
 
         val useCourses = args.getBoolean(useCourses, true)
@@ -62,28 +69,29 @@ class LocationListFragment : Fragment() {
             groupItems = groupItemsB
             childItems = childItemsB
         }
-//        simpleExpandableListView = findViewById(R.id.expandable_list)
+
         val prtModel = PRTModel.get()
         val prtStrings = ArrayList(prtModel.prtHashMap.keys)
         prtStrings.sort()
-        //childItems[0] = prtStrings.toArray(new String[prtStrings.size()]);
+
         childItems[0] = prtStrings.toTypedArray()
         val buildingStrings = ArrayList(prtModel.buildingHashMap.keys)
         buildingStrings.sort()
-        //childItems[1] = buildingStrings.toArray(new String[buildingStrings.size()]);
+
         childItems[1] = buildingStrings.toTypedArray()
         val dormStrings = ArrayList(prtModel.dormHashMap.keys)
         dormStrings.sort()
-        //childItems[2] = dormStrings.toArray(new String[dormStrings.size()]);
+
         childItems[2] = dormStrings.toTypedArray()
         if (useCourses) {
             val courseStrings = ArrayList<String>()
-            val courses = CourseDb.get(requireContext().applicationContext).coursesQueries.selectAll().executeAsList()
+            val courses =
+                CourseDb.get(requireContext().applicationContext).coursesQueries.selectAll()
+                    .executeAsList()
             for (course in courses) {
                 courseStrings.add(course.course)
             }
             courseStrings.sort()
-            //childItems[3] = courseStrings.toArray(new String[courseStrings.size()]);
             childItems[3] = courseStrings.toTypedArray()
         }
         for (i in groupItems.indices) {
@@ -108,21 +116,20 @@ class LocationListFragment : Fragment() {
 
 
         // Set up the adapter
-        val mAdapter = SimpleExpandableListAdapter(requireContext(), groupData,
-                R.layout.group_item,
-                groupFrom, groupTo,
-                childData, R.layout.child_item,
-                childFrom, childTo)
+        val mAdapter = SimpleExpandableListAdapter(
+            requireContext(), groupData,
+            R.layout.group_item,
+            groupFrom, groupTo,
+            childData, R.layout.child_item,
+            childFrom, childTo
+        )
         expandable_list.setAdapter(mAdapter)
 
         // perform set on group click listener event
         expandable_list.setOnGroupClickListener { _, _, _, _ -> false }
+
         // perform set on child click listener event
-        expandable_list.setOnChildClickListener{ _, _, groupPosition, childPosition, _ ->
-//            val resultIntent = Intent()
-//            resultIntent.putExtra("selected", childItems[groupPosition][childPosition])
-//            setResult(RESULT_OK, resultIntent)
-//            finish()
+        expandable_list.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
             val result = Bundle().apply {
                 putString(returnVal, childItems[groupPosition][childPosition])
                 requestCode?.let { putInt(requestCodeArgKey, it) }

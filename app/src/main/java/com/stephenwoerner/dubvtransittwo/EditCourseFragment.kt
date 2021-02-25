@@ -27,9 +27,13 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
     private lateinit var courseDb: CourseDb
     private var rowId: Long = 0
     private lateinit var title: String
-    private var returned : String? = null
+    private var returned: String? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_edit_course, container, false)
     }
 
@@ -51,25 +55,25 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         courseDb = CourseDb.get(requireContext().applicationContext)
 
         done_button.setOnClickListener {
-            //                run {
             if (isNew)
-                courseDb.coursesQueries.insert(course = editable_course_title.text.toString(),
-                        location = startBtn.text.toString(), note = course_note.text.toString())
+                courseDb.coursesQueries.insert(
+                    course = editable_course_title.text.toString(),
+                    location = startBtn.text.toString(), note = course_note.text.toString()
+                )
             else
                 courseDb.coursesQueries.update(
-                        course = editable_course_title.text.toString(),
-                        location = startBtn.text.toString(), note = course_note.text.toString(),
-                        _id = rowId,
+                    course = editable_course_title.text.toString(),
+                    location = startBtn.text.toString(), note = course_note.text.toString(),
+                    _id = rowId,
                 )
             navController.navigateUp()
-//                }
         }
         startBtn.setOnClickListener {
             showLocationList()
         }
         if (!isNew) fillData()
 
-        if(returned!=null)
+        if (returned != null)
             startBtn.text = returned
 
         parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
@@ -79,21 +83,29 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         val course = courseDb.coursesQueries.selectCourse(title).executeAsOneOrNull()
         if (course != null) {
             rowId = course._id
-            editable_course_title.setText( course.course)
+            editable_course_title.setText(course.course)
             startBtn.text = course.location
             course_note.setText(course.note)
         }
     }
 
     private fun showLocationList() {
-        val bundle = bundleOf(Pair(LocationListFragment.useCourses, false), Pair(LocationListFragment.requestKeyArgKey, requestKey))
+        val bundle = bundleOf(
+            Pair(LocationListFragment.useCourses, false),
+            Pair(LocationListFragment.requestKeyArgKey, requestKey)
+        )
         navController.navigate(R.id.action_editCourse_to_pickLocationExpandable, bundle)
     }
 
     override fun onFragmentResult(requestKey: String, result: Bundle) {
-        when(requestKey) {
+        when (requestKey) {
             EditCourseFragment.requestKey -> {
-                Timber.d(String.format("Returned %s", result.getString(LocationListFragment.returnVal)))
+                Timber.d(
+                    String.format(
+                        "Returned %s",
+                        result.getString(LocationListFragment.returnVal)
+                    )
+                )
                 returned = result.getString(LocationListFragment.returnVal)
             }
         }
