@@ -9,6 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.expandable_list_view.*
+import timber.log.Timber
 
 /**
  * Control interface to pick locations
@@ -17,9 +18,12 @@ import kotlinx.android.synthetic.main.expandable_list_view.*
 class PickLocationExpandable : Fragment() {
 
     companion object {
-        private const val NAME = "NAME"
+        const val requestKeyArgKey = "requestKey"
+        const val returnVal = "selected"
+        const val useCourses = "useCourses"
     }
 
+    private val NAME = "NAME"
     // string arrays for group and child items
     private var groupItems = arrayOf("PRT Stations", "Campus Buildings", "Dorms", "My Classes", "Other")
     private var childItems = arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
@@ -31,7 +35,7 @@ class PickLocationExpandable : Fragment() {
     private val childItemsB = arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
 
     lateinit var navController: NavController
-
+    lateinit var requestKey :String
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.expandable_list_view, container, false)
     }
@@ -40,8 +44,15 @@ class PickLocationExpandable : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         navController = Navigation.findNavController(view)
+        requireArguments().getString(requestKeyArgKey)?.let{
+            requestKey = it
+        } ?: run {
+            Timber.e("No Request Key")
+            navController.navigateUp()
+        }
 
-        val useCourses = requireArguments().getBoolean("useCourses", true)
+
+        val useCourses = requireArguments().getBoolean(useCourses, true)
         if (!useCourses) {
             groupItems = groupItemsB
             childItems = childItemsB
@@ -108,9 +119,9 @@ class PickLocationExpandable : Fragment() {
 //            setResult(RESULT_OK, resultIntent)
 //            finish()
             val result = Bundle().apply {
-                putString("selected", childItems[groupPosition][childPosition])
+                putString(returnVal, childItems[groupPosition][childPosition])
             }
-            parentFragmentManager.setFragmentResult("request_key", result)
+            parentFragmentManager.setFragmentResult(EditCourse.requestKey, result)
             navController.navigateUp()
             false
         }

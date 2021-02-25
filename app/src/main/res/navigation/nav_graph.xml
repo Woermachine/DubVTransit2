@@ -23,11 +23,15 @@
             app:popExitAnim="@anim/slide_out_right"
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"/>
+        <action
+            android:id="@+id/action_mapFragment_to_directionActivity"
+            app:destination="@id/directionActivity" />
     </fragment>
     <fragment
         android:id="@+id/courseList"
         android:name="com.stephenwoerner.dubvtransittwo.CourseList"
-        android:label="CourseList" >
+        android:label="CourseList"
+        tools:layout="@layout/course_lists" >
         <action
             android:id="@+id/action_courseList_to_editCourse"
             app:destination="@id/editCourse"
@@ -39,7 +43,8 @@
     <fragment
         android:id="@+id/editCourse"
         android:name="com.stephenwoerner.dubvtransittwo.EditCourse"
-        android:label="EditCourse" >
+        android:label="EditCourse"
+        tools:layout="@layout/edit_course" >
         <action
             android:id="@+id/action_editCourse_to_pickLocationExpandable"
             app:destination="@id/pickLocationExpandable"
@@ -51,5 +56,11 @@
     <fragment
         android:id="@+id/pickLocationExpandable"
         android:name="com.stephenwoerner.dubvtransittwo.PickLocationExpandable"
-        android:label="PickLocationExpandable" />
+        android:label="PickLocationExpandable"
+        tools:layout="@layout/expandable_list_view"/>
+    <activity
+        android:id="@+id/directionActivity"
+        android:name="com.stephenwoerner.dubvtransittwo.DirectionActivity"
+        android:label="DirectionActivity"
+        tools:layout="@layout/display_layout"/>
 </navigation>

@@ -12,6 +12,7 @@ import android.location.Location
 import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +23,9 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -40,10 +43,12 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
+val TAG = MapFragment::class.java.simpleName
 /**
  * Allows user to specify an origin, destination, and departure
  */
-class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, LocationListener {
+class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, LocationListener, FragmentResultListener {
+    private val requestKey = "key_$TAG"
     private lateinit var leavingTime: Calendar
     private lateinit var model: PRTModel
 
@@ -103,6 +108,7 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         navController = Navigation.findNavController(view)
+        parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -111,20 +117,15 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
         CoroutineScope(Dispatchers.IO).launch {
             model.requestPRTStatus()
         }
-        val destBtn = view.findViewById<Button>(R.id.destBtn)
         destBtn.setOnClickListener { showLocationList(it) }
 
-        val startBtn = view.findViewById<Button>(R.id.startBtn)
         startBtn.setOnClickListener { showLocationList(it) }
 
         leavingTime = Calendar.getInstance()
-        val timeBtn = view.findViewById<Button>(R.id.timeBtn)
         timeBtn.text = timeFormat.format(leavingTime.time)
 
-        val dateBtn = view.findViewById<Button>(R.id.dateBtn)
         dateBtn.text = dateFormat.format(leavingTime.time)
 
-        val useCurrentTimeCB = view.findViewById<CheckBox>(R.id.useCurrentTimeCB)
         useCurrentTimeCB.setOnClickListener {
             if (useCurrentTimeCB.isChecked) {
                 useCurrentTime = true
@@ -137,7 +138,6 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
             }
         }
 
-        val prtStatusBtn = view.findViewById<FloatingActionButton>(R.id.prtStatusBtn)
         prtStatusBtn.setOnClickListener {
             CoroutineScope(Dispatchers.IO).launch {
                 val prtOn = model.requestPRTStatus()
@@ -158,7 +158,6 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
             true
         }
 
-        val continueBtn = view.findViewById<Button>(R.id.continueBtn)
         continueBtn.setOnClickListener {
             launchDirectionActivity()
         }
@@ -208,15 +207,22 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      * @param v button
      */
     private fun showLocationList(v: View) {
-        val requestCode = if(v.id == R.id.destBtn) 0 else 1
-        val intent = Intent(requireContext(), PickLocationExpandable::class.java)
-        startActivityForResult(intent, requestCode)
+        val requestCode = v.id
+        val bundle = bundleOf(Pair("request_code", requestCode))
+        navController.navigate(R.id.action_mapFragment_to_pickLocationExpandable, bundle)
+    }
+
+    override fun onFragmentResult(requestKey: String, result: Bundle) {
+        when(requestKey) {
+            this.requestKey -> {
+                Timber.d(String.format("Hello %s", result.getString("selected")))
+                //TODO
+            }
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?)  {
         super.onActivityResult(requestCode, resultCode, data)
-        val destBtn = view?.findViewById<Button>(R.id.destBtn)
-        val startBtn = view?.findViewById<Button>(R.id.startBtn)
 
         if (resultCode == AppCompatActivity.RESULT_OK) {
             val selected = data!!.getStringExtra("selected")!!
@@ -262,11 +268,10 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      */
     private fun showTimePickerDialog() {
         Timber.d("building time picker dialog")
-        val timeBtn = view?.findViewById<Button>(R.id.timeBtn)
         val listener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
             leavingTime[Calendar.HOUR_OF_DAY] = hourOfDay
             leavingTime[Calendar.MINUTE] = minute
-            timeBtn?.text = timeFormat.format(leavingTime.time)
+            timeBtn.text = timeFormat.format(leavingTime.time)
         }
         val timePickerDialog = TimePickerDialog(
             requireContext(),
@@ -276,7 +281,6 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
             false
         )
         timePickerDialog.setTitle("Time Dialog")
-        //timePickerDialog.amPM
         Timber.d("showing time picker dialog")
         timePickerDialog.show()
     }
@@ -287,12 +291,11 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      */
     private fun showDatePickerDialog() {
         Timber.d("building date picker dialog")
-        val dateBtn = view?.findViewById<Button>(R.id.dateBtn)
         val listener = DatePickerDialog.OnDateSetListener { _, year, month, dayOfMonth ->
             leavingTime[Calendar.YEAR] = year
             leavingTime[Calendar.MONTH] = month
             leavingTime[Calendar.DAY_OF_MONTH] = dayOfMonth
-            dateBtn?.text = dateFormat.format(leavingTime.time)
+            dateBtn.text = dateFormat.format(leavingTime.time)
         }
         val datePickerDialog = DatePickerDialog(
             requireContext(),
@@ -310,38 +313,23 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      * Sends information to a new instance of DirectionActivity via an intent
      */
     private fun launchDirectionActivity() {
-        val destBtn = view?.findViewById<Button>(R.id.destBtn)
-        if (destBtn?.text.toString().compareTo("Destination", true) == 0) {
+        if (destBtn.text.toString().compareTo("Destination", true) == 0) {
             Timber.d("Failed to launch, no destination selected")
             Toast.makeText(requireContext(), "Must specify a destination", Toast.LENGTH_LONG).show()
             return
         }
-        if (destBtn?.text.toString().compareTo("Current Location", true) == 0) {
+        if (destBtn.text.toString().compareTo("Current Location", true) == 0) {
             Timber.d("Failed to launch, current location is not a valid destination")
             Toast.makeText(requireContext(), "Current Location is not a valid destination", Toast.LENGTH_LONG)
                 .show()
             return
         }
-        val startBtn = view?.findViewById<Button>(R.id.startBtn)
         val intent = Intent(requireContext(), DirectionActivity::class.java)
-        intent.putExtra("origin", startBtn?.text)
-        intent.putExtra("destination", destBtn?.text)
+        intent.putExtra("origin", startBtn.text)
+        intent.putExtra("destination", destBtn.text)
         intent.putExtra("leavingTime", leavingTime.timeInMillis)
         intent.putExtra("useCurrentTime", useCurrentTime)
         Timber.d("Launching direction activity")
-        startActivity(intent)
-    }
-
-    /**
-     * Creates a new instance of CourseList
-     */
-    private fun launchCourseList() {
-        val intent = Intent(requireContext(), CourseList::class.java)
-        //intent.putExtra("origin",startView.getText());
-        //intent.putExtra("destination",destView.getText());
-        //intent.putExtra("leavingTime",leavingTime.getTimeInMillis());
-        //intent.putExtra("useCurrentTime",useCurrentTime);
-        Timber.d("Launching course list")
         startActivity(intent)
     }
 
@@ -361,11 +349,10 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      */
     private fun prtButtonColor() {
         Timber.d("updating a prt status color")
-        val prt_badge = view?.findViewById<TextView>(R.id.prt_badge)
         if (model.status == "1")
-            prt_badge?.background = ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_green)
+            prt_badge.background = ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_green)
         else
-            prt_badge?.background = ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_red)
+            prt_badge.background = ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_red)
     }
 
     /**

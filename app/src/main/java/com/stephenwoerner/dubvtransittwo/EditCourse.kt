@@ -1,8 +1,6 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +11,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import kotlinx.android.synthetic.main.edit_course.*
+import timber.log.Timber
 
 /**
  * EditCourse allows a user to edit the contents of a Course which is stored as an entry in the database
@@ -20,7 +19,9 @@ import kotlinx.android.synthetic.main.edit_course.*
  * Created by srwoerner on 9/22/17.
  */
 class EditCourse : Fragment(), FragmentResultListener {
-//    private lateinit var courseDbAdapter: CourseDbAdapter
+    companion object {
+        val requestKey = "key_${EditCourse::class.java.simpleName}"
+    }
 
     private lateinit var navController: NavController
     private lateinit var courseDb: CourseDb
@@ -31,6 +32,7 @@ class EditCourse : Fragment(), FragmentResultListener {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         return inflater.inflate(R.layout.edit_course, container, false)
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -70,7 +72,7 @@ class EditCourse : Fragment(), FragmentResultListener {
         if(returned!=null)
             startBtn.text = returned
 
-        parentFragmentManager.setFragmentResultListener("request_key", requireActivity(), this)
+        parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
     }
 
     private fun fillData() {
@@ -84,30 +86,16 @@ class EditCourse : Fragment(), FragmentResultListener {
     }
 
     private fun showLocationList() {
-//        val intent = Intent(context, PickLocationExpandable::class.java)
-//        intent.putExtra("useCourses", false)
-//        val requestCode = 2
-        //TODO
-//        startActivityForResult(intent, requestCode)
-        val bundle = bundleOf(Pair("useCourses", false))
+        val bundle = bundleOf(Pair(PickLocationExpandable.useCourses, false), Pair(PickLocationExpandable.requestKeyArgKey, requestKey))
         navController.navigate(R.id.action_editCourse_to_pickLocationExpandable, bundle)
     }
 
-    fun onResult(requestCode: Int, resultCode: Int, data: Intent) {
-        //TODO
-//        super.onActivityResult(requestCode, resultCode, data)
-//        if (requestCode == 2) {
-//            if (resultCode == RESULT_OK) {
-//                startBtn.text = data.getStringExtra("selected")
-//            }
-//        }
-
-    }
-
     override fun onFragmentResult(requestKey: String, result: Bundle) {
-//        val result = result.getString("selected")
-        Log.d("EditCourse", String.format("Hello %s", result.getString("selected")))
-        returned =  result.getString("selected")
-        // do something with the result
+        when(requestKey) {
+            EditCourse.requestKey -> {
+                Timber.d(String.format("Returned %s", result.getString(PickLocationExpandable.returnVal)))
+                returned = result.getString(PickLocationExpandable.returnVal)
+            }
+        }
     }
 }
