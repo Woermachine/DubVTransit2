@@ -16,13 +16,13 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.course_items.view.*
-import kotlinx.android.synthetic.main.course_lists.*
+import kotlinx.android.synthetic.main.course_item.view.*
+import kotlinx.android.synthetic.main.fragment_course_lists.*
 
 /**
  * Created by srwoerner on 8/26/17.
  */
-class CourseList : Fragment(), View.OnClickListener {
+class CourseListFragment : Fragment(), View.OnClickListener {
 
     //private String DEBUG = "CourseList";
 //    private var context: Context? = null
@@ -32,7 +32,7 @@ class CourseList : Fragment(), View.OnClickListener {
     private lateinit var navController: NavController
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.course_lists, container, false)
+        return inflater.inflate(R.layout.fragment_course_lists, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -71,7 +71,7 @@ class CourseList : Fragment(), View.OnClickListener {
         override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
             if(convertView==null) {
                 val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                val v = inflater.inflate(R.layout.course_items, parent, false)
+                val v = inflater.inflate(R.layout.course_item, parent, false)
                 val title = categories[position] as String
                 v.course_title.text = title
                 v.course_title.setOnClickListener {
@@ -105,7 +105,7 @@ class CourseList : Fragment(), View.OnClickListener {
     private inner class CourseListAdapter(val dataList : ArrayList<String>) : RecyclerView.Adapter<CourseListViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseListViewHolder {
-            val dirLayout = LayoutInflater.from(parent.context).inflate(R.layout.course_items, parent, false) as RelativeLayout
+            val dirLayout = LayoutInflater.from(parent.context).inflate(R.layout.course_item, parent, false) as RelativeLayout
             return CourseListViewHolder(dirLayout)
         }
 
@@ -157,9 +157,4 @@ class CourseList : Fragment(), View.OnClickListener {
             }
         }
     }
-}
-
-interface CellClickListener {
-    fun onCellClickListener(position : Int)
-    fun onDeleteClickListener(position : Int)
 }

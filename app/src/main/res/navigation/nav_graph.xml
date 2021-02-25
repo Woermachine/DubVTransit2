@@ -24,14 +24,14 @@
             app:enterAnim="@anim/slide_in_right"
             app:exitAnim="@anim/slide_out_left"/>
         <action
-            android:id="@+id/action_mapFragment_to_directionActivity"
-            app:destination="@id/directionActivity" />
+            android:id="@+id/action_mapFragment_to_directionFragment"
+            app:destination="@id/directionFragment" />
     </fragment>
     <fragment
         android:id="@+id/courseList"
-        android:name="com.stephenwoerner.dubvtransittwo.CourseList"
+        android:name="com.stephenwoerner.dubvtransittwo.CourseListFragment"
         android:label="CourseList"
-        tools:layout="@layout/course_lists" >
+        tools:layout="@layout/fragment_course_lists" >
         <action
             android:id="@+id/action_courseList_to_editCourse"
             app:destination="@id/editCourse"
@@ -42,9 +42,9 @@
     </fragment>
     <fragment
         android:id="@+id/editCourse"
-        android:name="com.stephenwoerner.dubvtransittwo.EditCourse"
+        android:name="com.stephenwoerner.dubvtransittwo.EditCourseFragment"
         android:label="EditCourse"
-        tools:layout="@layout/edit_course" >
+        tools:layout="@layout/fragment_edit_course" >
         <action
             android:id="@+id/action_editCourse_to_pickLocationExpandable"
             app:destination="@id/pickLocationExpandable"
@@ -55,12 +55,11 @@
     </fragment>
     <fragment
         android:id="@+id/pickLocationExpandable"
-        android:name="com.stephenwoerner.dubvtransittwo.PickLocationExpandable"
+        android:name="com.stephenwoerner.dubvtransittwo.LocationListFragment"
         android:label="PickLocationExpandable"
-        tools:layout="@layout/expandable_list_view"/>
-    <activity
-        android:id="@+id/directionActivity"
-        android:name="com.stephenwoerner.dubvtransittwo.DirectionActivity"
-        android:label="DirectionActivity"
-        tools:layout="@layout/display_layout"/>
+        tools:layout="@layout/fragment_location_list"/>
+    <fragment
+        android:id="@+id/directionFragment"
+        android:name="com.stephenwoerner.dubvtransittwo.DirectionFragment"
+        android:label="DirectionFragment" />
 </navigation>

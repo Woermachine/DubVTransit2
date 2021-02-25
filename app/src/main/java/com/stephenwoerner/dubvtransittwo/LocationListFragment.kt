@@ -8,14 +8,14 @@ import android.widget.SimpleExpandableListAdapter
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.expandable_list_view.*
+import kotlinx.android.synthetic.main.fragment_location_list.*
 import timber.log.Timber
 
 /**
  * Control interface to pick locations
  * Created by srwoerner on 5/13/17.
  */
-class PickLocationExpandable : Fragment() {
+class LocationListFragment : Fragment() {
 
     companion object {
         const val requestKeyArgKey = "requestKey"
@@ -39,7 +39,7 @@ class PickLocationExpandable : Fragment() {
     lateinit var requestKey: String
     var requestCode : Int? = null
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.expandable_list_view, container, false)
+        return inflater.inflate(R.layout.fragment_location_list, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -109,9 +109,9 @@ class PickLocationExpandable : Fragment() {
 
         // Set up the adapter
         val mAdapter = SimpleExpandableListAdapter(requireContext(), groupData,
-                R.layout.group_items,
+                R.layout.group_item,
                 groupFrom, groupTo,
-                childData, R.layout.child_items,
+                childData, R.layout.child_item,
                 childFrom, childTo)
         expandable_list.setAdapter(mAdapter)
 

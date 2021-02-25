@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.Location
@@ -101,7 +100,6 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
         }
 
     override fun onCreateView( inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle? ): View? {
-
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
@@ -215,16 +213,16 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      */
     private fun showLocationList(v: View) {
         val requestCode = v.id
-        val bundle = bundleOf(Pair(PickLocationExpandable.requestKeyArgKey, requestKey),
-            Pair(PickLocationExpandable.requestCodeArgKey, requestCode))
+        val bundle = bundleOf(Pair(LocationListFragment.requestKeyArgKey, requestKey),
+            Pair(LocationListFragment.requestCodeArgKey, requestCode))
         navController.navigate(R.id.action_mapFragment_to_pickLocationExpandable, bundle)
     }
 
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when(requestKey) {
             MapFragment.requestKey -> {
-                val requestCode = result.getInt(PickLocationExpandable.requestCodeArgKey)
-                val selected = result.getString(PickLocationExpandable.returnVal)!!
+                val requestCode = result.getInt(LocationListFragment.requestCodeArgKey)
+                val selected = result.getString(LocationListFragment.returnVal)!!
                 Timber.d(String.format("PickLocationExpandable returned: %s %s", requestCode , selected))
                 when(requestCode) {
                     R.id.destBtn -> viewModel.setDestination(selected)
@@ -295,13 +293,22 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
                 .show()
             return
         }
-        val intent = Intent(requireContext(), DirectionActivity::class.java)
-        intent.putExtra("origin", startBtn.text)
-        intent.putExtra("destination", destBtn.text)
-        intent.putExtra("leavingTime", leavingTime.timeInMillis)
-        intent.putExtra("useCurrentTime", useCurrentTime)
-        Timber.d("Launching direction activity")
-        startActivity(intent)
+//        val intent = Intent(requireContext(), DirectionFragment::class.java)
+//        intent.putExtra("origin", startBtn.text)
+//        intent.putExtra("destination", destBtn.text)
+//        intent.putExtra("leavingTime", leavingTime.timeInMillis)
+//        intent.putExtra("useCurrentTime", useCurrentTime)
+//        Timber.d("Launching direction activity")
+//        startActivity(intent)
+
+        val bundle = Bundle().apply {
+            putString("origin", startBtn.text.toString())
+            putString("destination", destBtn.text.toString())
+            putLong("leavingTime", leavingTime.timeInMillis)
+            putBoolean("useCurrentTime", useCurrentTime)
+        }
+        Timber.d("Launching DirectionFragment")
+        navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
     }
 
     /**

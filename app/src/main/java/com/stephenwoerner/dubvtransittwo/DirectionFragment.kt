@@ -16,18 +16,19 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.maps.model.LatLng
-import kotlinx.android.synthetic.main.display_layout.*
+import kotlinx.android.synthetic.main.fragment_directions.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,7 +37,7 @@ import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.math.*
 
-class DirectionActivity : AppCompatActivity(), LocationListener {
+class DirectionFragment : Fragment(), LocationListener {
 
     enum class Route { CAR, BUS, WALK, PRT }
 
@@ -58,18 +59,21 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
     private lateinit var prtDirections : DirectionAdapter
 
     private var leavingTimeMillis : Long = 0L
-    private var context = this@DirectionActivity
+//    private var context = this@DirectionActivity
     private val model = PRTModel.get()
 
     private val mapsDataClient = MapsDataClient()
 
+    lateinit var navController: NavController
+    private val viewModel: MyViewModel by activityViewModels()
+
     private val location: LatLng
         get() {
             var currentLocation = LatLng(0.0, 0.0)
-            locationManager = getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
                 ActivityCompat.requestPermissions(
-                    this,
+                    requireActivity(),
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
                     1
                 )
@@ -101,35 +105,50 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
                 val hundredMilesInKM = 160.934
 
                 if( getDistanceFromLatLonInKm(morgantown.lat, morgantown.lng, lat, lon) > hundredMilesInKM ) {
-                    finish()
+                    navController.navigateUp()
                 }
 
             }
             return currentLocation
         }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        return inflater.inflate(R.layout.fragment_directions, container, false)
+    }
 
-        window.requestFeature(Window.FEATURE_ACTION_BAR)
-        supportActionBar?.hide()
-        setContentView(R.layout.display_layout)
-        context = this@DirectionActivity
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val viewModel = ViewModelProvider(this).get(DirectionViewModel::class.java)
+        navController = Navigation.findNavController(view)
+
+        walkButton.setOnClickListener {
+            changeSelected(it)
+        }
+
+        busButton.setOnClickListener {
+            changeSelected(it)
+        }
+
+        prtButton.setOnClickListener {
+            changeSelected(it)
+        }
+
+        carButton.setOnClickListener {
+            changeSelected(it)
+        }
 
         var originStr = ""
         try {
-            originStr = intent.getStringExtra("origin")!!
-            destinationStr = intent.getStringExtra("destination")!!
-            useCurrentTime = intent.getBooleanExtra("useCurrentTime", true)
-            leavingTimeMillis =  intent.getLongExtra(
+            originStr = requireArguments().getString("origin")!!
+            destinationStr = requireArguments().getString("destination")!!
+            useCurrentTime = requireArguments().getBoolean("useCurrentTime", true)
+            leavingTimeMillis =  requireArguments().getLong(
                 "leavingTime",
                 Calendar.getInstance().timeInMillis
             )
         } catch (e: NullPointerException) {
             Timber.e(e)
-            finish()
+            navController.navigateUp()
         }
 
         val displayOrigin = "From: $originStr"
@@ -144,7 +163,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
                 val lookupString = if(model.allHashMap.containsKey(originStr)) {
                     originStr
                 } else {
-                    val courseDb = CourseDb.get(applicationContext)
+                    val courseDb = CourseDb.get(requireContext().applicationContext)
                     val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
                     course.location
                 }
@@ -153,12 +172,12 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
         }
 
         if (!model.allHashMap.containsKey(destinationStr)) { //If its not in the HashMap then its a user course
-            val courseDb = CourseDb.get(applicationContext)
+            val courseDb = CourseDb.get(requireContext().applicationContext)
             val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
             destinationStr = course.location
         }
         destination = model.allHashMap[destinationStr]!!
-        navigationButton.setOnClickListener { AlertDialog.Builder(context).setView(R.layout.alert_contents).setNegativeButton(
+        navigationButton.setOnClickListener { AlertDialog.Builder(requireContext()).setView(R.layout.alert_contents).setNegativeButton(
             "Cancel"
         ) { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(
             R.drawable.ic_navigation_black_36dp
@@ -176,7 +195,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
                 destination
             )
 
-            runOnUiThread {
+            requireActivity().runOnUiThread {
                 onResults(results)
             }
         }
@@ -240,13 +259,13 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
      * @param v the button which was pressed
      */
     fun changeSelected(v: View) {
-        val unselected = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonUnselected))
+        val unselected = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonUnselected))
         carButton.background = unselected
         prtButton.background = unselected
         walkButton.background = unselected
         busButton.background = unselected
 
-        val selectedColor = ColorDrawable(ContextCompat.getColor(context, R.color.ButtonSelected))
+        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonSelected))
         list2.adapter = when (v.id) {
             R.id.busButton -> {
                 busButton.background = selectedColor
@@ -276,7 +295,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
         locationManager.removeUpdates(this)
     }
 
-    public override fun onPause() {
+    override fun onPause() {
         super.onPause()
         progress.visibility = View.GONE
     }
@@ -298,7 +317,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
             }
         }
         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-        context.startActivity(intent)
+        requireActivity().startActivity(intent)
     }
 
     private fun prtButtonColor() : Drawable {
@@ -313,7 +332,7 @@ class DirectionActivity : AppCompatActivity(), LocationListener {
     }
 
     private fun getMuhDrawable(id: Int) : Drawable {
-        return ContextCompat.getDrawable(applicationContext, id)!!
+        return ContextCompat.getDrawable(requireContext().applicationContext, id)!!
     }
 
     // Required functions

@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.edit_course.*
+import kotlinx.android.synthetic.main.fragment_edit_course.*
 import timber.log.Timber
 
 /**
@@ -18,9 +18,9 @@ import timber.log.Timber
  *
  * Created by srwoerner on 9/22/17.
  */
-class EditCourse : Fragment(), FragmentResultListener {
+class EditCourseFragment : Fragment(), FragmentResultListener {
     companion object {
-        val requestKey = "key_${EditCourse::class.java.simpleName}"
+        val requestKey = "key_${EditCourseFragment::class.java.simpleName}"
     }
 
     private lateinit var navController: NavController
@@ -30,7 +30,7 @@ class EditCourse : Fragment(), FragmentResultListener {
     private var returned : String? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        return inflater.inflate(R.layout.edit_course, container, false)
+        return inflater.inflate(R.layout.fragment_edit_course, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -86,15 +86,15 @@ class EditCourse : Fragment(), FragmentResultListener {
     }
 
     private fun showLocationList() {
-        val bundle = bundleOf(Pair(PickLocationExpandable.useCourses, false), Pair(PickLocationExpandable.requestKeyArgKey, requestKey))
+        val bundle = bundleOf(Pair(LocationListFragment.useCourses, false), Pair(LocationListFragment.requestKeyArgKey, requestKey))
         navController.navigate(R.id.action_editCourse_to_pickLocationExpandable, bundle)
     }
 
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when(requestKey) {
-            EditCourse.requestKey -> {
-                Timber.d(String.format("Returned %s", result.getString(PickLocationExpandable.returnVal)))
-                returned = result.getString(PickLocationExpandable.returnVal)
+            EditCourseFragment.requestKey -> {
+                Timber.d(String.format("Returned %s", result.getString(LocationListFragment.returnVal)))
+                returned = result.getString(LocationListFragment.returnVal)
             }
         }
     }
