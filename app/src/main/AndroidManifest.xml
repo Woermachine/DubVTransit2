@@ -23,26 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.stephenwoerner.dubvtransittwo.DirectionActivity" android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity android:name="com.stephenwoerner.dubvtransittwo.PickLocationExpandable" android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity android:name="com.stephenwoerner.dubvtransittwo.CourseList" android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
-        <activity android:name="com.stephenwoerner.dubvtransittwo.EditCourse" android:screenOrientation="portrait">
-            <intent-filter>
-                <action android:name="android.intent.action.DEFAULT" />
-            </intent-filter>
-        </activity>
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />

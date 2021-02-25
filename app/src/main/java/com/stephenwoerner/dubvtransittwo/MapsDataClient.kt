@@ -96,18 +96,18 @@ class MapsDataClient {
 
 
         var fastest = cSAD.duration
-        var fastestRoute = DirectionActivity.Route.CAR
+        var fastestRoute = DirectionFragment.Route.CAR
 
         if (bSAD.isAvailable && bSAD.duration < fastest) {
             fastest = bSAD.duration
-            fastestRoute = DirectionActivity.Route.BUS
+            fastestRoute = DirectionFragment.Route.BUS
         }
         if (wSAD.isAvailable && wSAD.duration < fastest) {
             fastest = wSAD.duration
-            fastestRoute = DirectionActivity.Route.WALK
+            fastestRoute = DirectionFragment.Route.WALK
         }
         if (pSAD.isAvailable && pSAD.duration < fastest) {
-            fastestRoute = DirectionActivity.Route.PRT
+            fastestRoute = DirectionFragment.Route.PRT
         }
 
         return MapsTaskResults(
@@ -150,7 +150,7 @@ class MapsDataClient {
 
     data class MapsTaskResults(val carStepsAndDuration: StepsAndDuration, val busStepsAndDuration: StepsAndDuration,
                                val walkStepsAndDuration: StepsAndDuration, val prtStepsAndDuration: StepsAndDuration,
-                               val fastestRoute : DirectionActivity.Route, val closestPRTA : String,
+                               val fastestRoute : DirectionFragment.Route, val closestPRTA : String,
                                val closestPRTB : String, val leavingTime : Long)
 
 }

@@ -89,7 +89,7 @@ class PRTModel private constructor() {
 
         val departingTime = DateTime.fromUnix(departingTimeInMillis)
 
-        println( "${DirectionActivity::class.simpleName} Open at calendar time ${departingTime.hours}:${departingTime.minutes}")
+        println( "${DirectionFragment::class.simpleName} Open at calendar time ${departingTime.hours}:${departingTime.minutes}")
         return when (departingTime.dayOfWeek) {
             DayOfWeek.Sunday -> false
             DayOfWeek.Saturday -> {

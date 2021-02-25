@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".CourseListFragment" >
     <RelativeLayout
         android:id="@+id/header"
         android:layout_width="match_parent"
@@ -25,13 +28,13 @@
         android:layout_below="@id/header"
         android:background="@android:color/darker_gray" />
 
-    <ListView
-        android:id="@android:id/list"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/course_list"
         android:layout_below="@id/divider1"
         android:orientation="vertical"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
-    </ListView>
+    </androidx.recyclerview.widget.RecyclerView>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_course_button"
@@ -43,5 +46,6 @@
         android:clickable="true"
         android:focusable="true"
         android:src="@android:drawable/ic_input_add"
-        android:tint="@android:color/white"/>
+        android:tint="@android:color/white"
+        android:contentDescription="@string/add_course_button_desc" />
 </RelativeLayout>

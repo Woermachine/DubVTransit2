@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:clipToPadding="false"
+    android:background="@color/colorAccent"
+    tools:context=".MapFragment"
+    >
+
+    <fragment
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/map"
+        tools:context=".MapFragment"
+        android:name="com.google.android.gms.maps.SupportMapFragment" />
+
+
+    <LinearLayout
+        android:id="@+id/layout_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/main_menu"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:layout_margin="10dp"
+        android:elevation="10dp"
+        android:translationZ="10dp"
+        android:clipChildren="true">
+
+        <GridLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FF000000"
+                android:text="@string/from_main"/>
+
+            <Button
+                android:id="@+id/startBtn"
+                android:contentDescription="@string/change_start"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/current_location"
+                android:textSize="16sp"
+                android:textColor="@color/colorAccent" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FF000000"
+                android:layout_row="1"
+                android:layout_column="0"
+                android:text="@string/to_main"/>
+
+            <Button
+                android:id="@+id/destBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/destination"
+                android:textSize="16sp"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:textColor="@color/colorAccent"/>
+
+            <Button
+                android:id="@+id/continueBtn"
+                android:contentDescription="@string/send_request"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@mipmap/continue_arrow"
+                android:elevation="2dp"
+                android:translationZ="2dp"/>
+        </GridLayout>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="5dp"
+                android:layout_marginBottom="5dp"
+                android:text="@string/departure_time"
+                android:textColor="#FF000000"
+                android:layout_gravity="center"/>
+
+            <CheckBox
+                android:id="@+id/useCurrentTimeCB"
+                android:contentDescription="@string/current_time_bool"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/current_time"
+                android:textColor="#FF000000" />
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone">
+            <Button
+                android:id="@+id/timeBtn"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:contentDescription="@string/change_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:color="#CC000000"
+                android:text="@string/current_time"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#CCFFFFFF"/>
+
+            <Button
+                android:id="@+id/dateBtn"
+                android:contentDescription="@string/change_date"
+                style="@style/Widget.AppCompat.Button.Colored"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:color="#CC000000"
+                android:text="@string/current_day"
+                android:textColor="#FFFFFFFF"
+                android:textColorHint="#CCFFFFFF"
+                android:visibility="visible" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/courseBtn"
+        android:contentDescription="@string/send_request"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        app:srcCompat="@mipmap/schedule_icon"
+        android:backgroundTint="@color/colorPrimary"
+        android:layout_margin="10dp"
+        android:layout_below="@id/layout_container"
+        android:elevation="10dp"
+        android:translationZ="10dp"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/prtStatusBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@id/prt_badge"
+        android:layout_alignParentEnd="true"
+        android:layout_margin="10dp"
+        android:padding="10dp"
+        android:contentDescription="@string/status"
+        app:srcCompat="@mipmap/prt_icon"
+        android:backgroundTint="@color/colorPrimary"
+        android:elevation="10dp"
+        android:translationZ="10dp"/>
+
+    <TextView
+        android:id="@+id/prt_badge"
+        android:layout_width="match_parent"
+        android:layout_height="10dp"
+        android:background="@drawable/rounded_bar_green"
+        android:layout_alignParentBottom="true"/>
+
+
+</RelativeLayout>

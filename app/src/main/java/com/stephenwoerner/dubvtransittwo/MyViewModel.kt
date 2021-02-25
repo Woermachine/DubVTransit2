@@ -4,7 +4,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.google.maps.model.LatLng
 
-class DirectionViewModel : ViewModel() {
+class MyViewModel : ViewModel() {
+
+    var destination: MutableLiveData<String> = MutableLiveData()
+    var source: MutableLiveData<String> = MutableLiveData()
 
     private val carDirections = MutableLiveData<ArrayList<String>>()
     private val busDirections = MutableLiveData<ArrayList<String>>()
@@ -20,16 +23,22 @@ class DirectionViewModel : ViewModel() {
     private val closestPRTB = MutableLiveData<String>()
     private val useCurrentTime = MutableLiveData<Boolean>()
 
-    private val origin = MutableLiveData<LatLng>()
-    private val destination = MutableLiveData<LatLng>()
+    private val originLatLng = MutableLiveData<LatLng>()
+    private val destinationLatLng = MutableLiveData<LatLng>()
 
 
     init {
+        destination.value = "Destination"
+        source.value = "Current Location"
         leavingTimeMillis.value = 0L
         useCurrentTime.value = false;
     }
 
+    fun setSource(dest : String) {
+        source.value = dest
+    }
 
-
-
+    fun setDestination(dest : String) {
+        destination.value = dest
+    }
 }
