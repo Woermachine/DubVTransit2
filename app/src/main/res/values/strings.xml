@@ -63,5 +63,6 @@
     <string name="save_button_desc">save button</string>
     <string name="add_course_button_desc">add course button</string>
     <string name="delete_course_desc">delete course</string>
+    <string name="open_calendar">open calendar</string>
 
 </resources>
