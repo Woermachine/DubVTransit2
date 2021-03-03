@@ -20,8 +20,8 @@ android {
         applicationId "com.stephenwoerner.dubvtransittwo"
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 4
-        versionName "2.0.4"
+        versionCode 5
+        versionName "2.0.5"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_KEY", apiKeyProperties['MAPS_KEY'])
         resValue "string", "maps_api_key", (apiKeyProperties.getProperty("MAPS_KEY") ?: "")
