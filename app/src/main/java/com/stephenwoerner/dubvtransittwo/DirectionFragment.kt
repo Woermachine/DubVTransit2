@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
@@ -28,7 +27,6 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.maps.model.LatLng
-import kotlinx.android.synthetic.main.alert_contents.*
 import kotlinx.android.synthetic.main.fragment_directions.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -46,6 +44,7 @@ class DirectionFragment : Fragment(), LocationListener {
     private lateinit var closestPRTA: String
     private lateinit var closestPRTB: String
     private var useCurrentTime: Boolean = false
+    private var selected : Int = R.id.carButton
 
     private lateinit var origin: LatLng
     private lateinit var destination: LatLng
@@ -190,21 +189,17 @@ class DirectionFragment : Fragment(), LocationListener {
             destinationStr = course.location
         }
         destination = model.allHashMap[destinationStr]!!
-        navigationButton.setOnClickListener {
-            AlertDialog.Builder(requireContext()).setView(R.layout.alert_contents)
-                .setNegativeButton("Cancel") { dialog, _ -> dialog.dismiss() }
-                .setCancelable(true)
-                .setTitle(R.string.alert_title)
-                .setIcon(R.drawable.ic_navigation_black_36dp)
-                .setMessage(R.string.alert_message)
-                .show()
-            option_prt.setOnClickListener { openMaps(it) }
-            option_dest.setOnClickListener { openMaps(it) }
-        }
 
-        progress = ProgressBar(context)
-        progress.isIndeterminate = true
-        progress.visibility = View.VISIBLE
+        navigationButton.setOnClickListener {
+            val dest = if(selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest
+            AlertDialog.Builder(requireActivity())
+                .setIcon(R.drawable.ic_navigation_black_36dp)
+                .setTitle(R.string.alert_title)
+                .setMessage(dest)
+                .setPositiveButton("Open") { _,_ -> openMaps(dest) }
+                .setCancelable(true)
+                .show()
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             model.requestPRTStatus()
@@ -277,17 +272,16 @@ class DirectionFragment : Fragment(), LocationListener {
      * Change directions
      * @param v the button which was pressed
      */
-    fun changeSelected(v: View) {
-        val unselected =
-            ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonUnselected))
+    private fun changeSelected(v: View) {
+        val unselected = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonUnselected))
         carButton.background = unselected
         prtButton.background = unselected
         walkButton.background = unselected
         busButton.background = unselected
 
-        val selectedColor =
-            ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonSelected))
-        list2.adapter = when (v.id) {
+        selected = v.id
+        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonSelected))
+        list2.adapter = when (selected) {
             R.id.busButton -> {
                 busButton.background = selectedColor
                 busDirections
@@ -323,21 +317,21 @@ class DirectionFragment : Fragment(), LocationListener {
 
     /**
      * Open maps with a determined intent
-     * @param v the TextView which was clicked
+     * @param strDest the string int representing prt or destination
      */
-    fun openMaps(v: View) {
-        val prt = model.allHashMap[closestPRTA]
-        val uri: String
-        uri = if (v.id == R.id.option_dest) {
-            "http://maps.google.com/maps?q=loc:" + destination.lat + "," + destination.lng + " (" + destinationStr + ")"
-        } else {
-            if (prt != null) {
-                "http://maps.google.com/maps?q=loc:" + prt.lat + "," + prt.lng + " ( Closest PRT Station )"
-            } else {
-                ""
+    private fun openMaps(strDest: Int) {
+        val uriString = when(strDest) {
+            R.string.nearest_dest -> "http://maps.google.com/maps?q=loc:" + destination.lat + "," + destination.lng + " (" + destinationStr + ")"
+            else -> {
+                val prt = model.allHashMap[closestPRTA]
+                if (prt != null) {
+                    "http://maps.google.com/maps?q=loc:" + prt.lat + "," + prt.lng + " ( Closest PRT Station )"
+                } else {
+                    ""
+                }
             }
         }
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uriString))
         requireActivity().startActivity(intent)
     }
 
@@ -373,10 +367,6 @@ class DirectionFragment : Fragment(), LocationListener {
         // Unused
     }
 
-    companion object {
-        private lateinit var progress: ProgressBar
-    }
-
     private fun getDistanceFromLatLonInKm(
         lat1: Double,
         lon1: Double,
@@ -399,7 +389,7 @@ class DirectionFragment : Fragment(), LocationListener {
         return deg * (PI / 180.0)
     }
 
-    class DirectionAdapter(val dataList: ArrayList<MapsDataClient.SimpleDirections>) :
+    class DirectionAdapter(private val dataList: ArrayList<MapsDataClient.SimpleDirections>) :
         RecyclerView.Adapter<DirectionsViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DirectionsViewHolder {

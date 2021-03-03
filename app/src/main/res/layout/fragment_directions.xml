@@ -160,4 +160,17 @@
         android:layout_margin="10dp"
         android:elevation="2dp"/>
 
+    <RelativeLayout
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#8A000000"
+        tools:visibility="gone">
+        <ProgressBar
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:indeterminate="true"
+            />
+    </RelativeLayout>
 </RelativeLayout>

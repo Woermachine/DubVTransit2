@@ -16,7 +16,7 @@
             android:layout_height="30dp"
             android:layout_centerInParent="true"
             android:gravity="center"
-            android:text="@string/alert_option_prt" />
+            android:text="@string/alert_option_prt"/>
     </RelativeLayout>
 
 

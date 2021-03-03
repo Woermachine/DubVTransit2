@@ -28,7 +28,7 @@
     <string name="current_time_bool">use the current or not</string>
 
     <!-- ****************** -->
-    <!-- Direction Activity -->
+    <!-- Direction Fragment -->
     <!-- ****************** -->
 
     <string name="from">From:</string>
@@ -40,6 +40,8 @@
     <string name="car_description">Show directions for driving</string>
     <string name="open_directions">Open directions in another app</string>
     <string name="ZeroMin">0 MINS</string>
+    <string name="nearest_prt">Navigate to nearest PRT station</string>
+    <string name="nearest_dest">Navigate to destination</string>
 
 
     <!-- ************ -->
