@@ -14,6 +14,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.RotateAnimation
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -37,11 +39,14 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 
+
 val TAG: String = MapFragment::class.java.simpleName
+
 /**
  * Allows user to specify an origin, destination, and departure
  */
-class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, LocationListener, FragmentResultListener {
+class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, LocationListener,
+    FragmentResultListener {
 
     companion object {
         val requestKey = "key_$TAG"
@@ -50,7 +55,7 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
     private lateinit var leavingTime: Calendar
     private lateinit var model: PRTModel
 
-    private lateinit var locationManager : LocationManager
+    private lateinit var locationManager: LocationManager
 
     private val timeFormat = SimpleDateFormat("h:mm a", Locale.US)
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
@@ -64,8 +69,13 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
     private val location: com.google.maps.model.LatLng
         get() {
             var currentLocation = com.google.maps.model.LatLng(0.0, 0.0)
-            locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationManager =
+                requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(
                     requireActivity(),
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -75,8 +85,6 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
                 val criteria = Criteria()
                 criteria.accuracy = Criteria.ACCURACY_FINE
-//                val providers = locationManager.allProviders
-//                val bestProvider = providers[0]
                 var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 while (location == null) {
                     location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
@@ -99,7 +107,11 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
             return currentLocation
         }
 
-    override fun onCreateView( inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle? ): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
@@ -123,9 +135,9 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
         destBtn.setOnClickListener { showLocationList(it) }
 
         viewModel.source.observe(viewLifecycleOwner, { item ->
-            startBtn.text = item
+            locationBtn.text = item
         })
-        startBtn.setOnClickListener { showLocationList(it) }
+        locationBtn.setOnClickListener { showLocationList(it) }
 
         leavingTime = Calendar.getInstance()
         timeBtn.text = timeFormat.format(leavingTime.time)
@@ -143,11 +155,23 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
             }
         }
 
-        prtStatusBtn.setOnClickListener {
+        prt_badge.setOnClickListener {
+            val rotateAnimation = RotateAnimation(
+                0F,
+                359F,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF,
+                0.5f
+            )
+            rotateAnimation.repeatCount = Animation.ABSOLUTE
+            rotateAnimation.repeatMode = Animation.RESTART
+            rotateAnimation.duration = 1000
+            refreshBtn.startAnimation(rotateAnimation)
             CoroutineScope(Dispatchers.IO).launch {
                 val prtOn = model.requestPRTStatus()
                 activity?.runOnUiThread {
-                    if(prtOn)
+                    if (prtOn)
                         Toast.makeText(
                             requireContext().applicationContext,
                             "You can only update the status once every 30 seconds\nLong press to see full prt status",
@@ -158,7 +182,7 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
                 }
             }
         }
-        prtStatusBtn.setOnLongClickListener {
+        prt_badge.setOnLongClickListener {
             showPRTDialog()
             true
         }
@@ -175,7 +199,7 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
         destBtn.setOnClickListener {
             showLocationList(it)
         }
-        startBtn.setOnClickListener {
+        locationBtn.setOnClickListener {
             showLocationList(it)
         }
         timeBtn.setOnClickListener {
@@ -213,20 +237,31 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
      */
     private fun showLocationList(v: View) {
         val requestCode = v.id
-        val bundle = bundleOf(Pair(LocationListFragment.requestKeyArgKey, requestKey),
-            Pair(LocationListFragment.requestCodeArgKey, requestCode))
+        val bundle = bundleOf(
+            Pair(LocationListFragment.requestKeyArgKey, requestKey),
+            Pair(LocationListFragment.requestCodeArgKey, requestCode)
+        )
+        if(v.id == R.id.destBtn)
+            bundle.putBoolean(LocationListFragment.allowCurrLocation, false)
+
         navController.navigate(R.id.action_mapFragment_to_pickLocationExpandable, bundle)
     }
 
     override fun onFragmentResult(requestKey: String, result: Bundle) {
-        when(requestKey) {
+        when (requestKey) {
             MapFragment.requestKey -> {
                 val requestCode = result.getInt(LocationListFragment.requestCodeArgKey)
                 val selected = result.getString(LocationListFragment.returnVal)!!
-                Timber.d(String.format("PickLocationExpandable returned: %s %s", requestCode , selected))
-                when(requestCode) {
+                Timber.d(
+                    String.format(
+                        "PickLocationExpandable returned: %s %s",
+                        requestCode,
+                        selected
+                    )
+                )
+                when (requestCode) {
                     R.id.destBtn -> viewModel.setDestination(selected)
-                    R.id.startBtn -> viewModel.setSource(selected)
+                    R.id.locationBtn -> viewModel.setSource(selected)
                 }
             }
         }
@@ -289,20 +324,17 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
         }
         if (destBtn.text.toString().compareTo("Current Location", true) == 0) {
             Timber.d("Failed to launch, current location is not a valid destination")
-            Toast.makeText(requireContext(), "Current Location is not a valid destination", Toast.LENGTH_LONG)
+            Toast.makeText(
+                requireContext(),
+                "Current Location is not a valid destination",
+                Toast.LENGTH_LONG
+            )
                 .show()
             return
         }
-//        val intent = Intent(requireContext(), DirectionFragment::class.java)
-//        intent.putExtra("origin", startBtn.text)
-//        intent.putExtra("destination", destBtn.text)
-//        intent.putExtra("leavingTime", leavingTime.timeInMillis)
-//        intent.putExtra("useCurrentTime", useCurrentTime)
-//        Timber.d("Launching direction activity")
-//        startActivity(intent)
 
         val bundle = Bundle().apply {
-            putString("origin", startBtn.text.toString())
+            putString("origin", locationBtn.text.toString())
             putString("destination", destBtn.text.toString())
             putLong("leavingTime", leavingTime.timeInMillis)
             putBoolean("useCurrentTime", useCurrentTime)
@@ -328,9 +360,11 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
     private fun prtButtonColor() {
         Timber.d("updating a prt status color")
         if (model.status == "1")
-            prt_badge.background = ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_green)
+            prt_badge.background =
+                ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_green)
         else
-            prt_badge.background = ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_red)
+            prt_badge.background =
+                ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_red)
     }
 
     /**
@@ -366,18 +400,17 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
                 )
             }
         })
-//        val allPointsHM = model.allHashMap
-//        model.allHashMap.keys.forEach { placeName ->
-//            val loc = allPointsHM[placeName]!!
-//            val location = LatLng(loc.lat, loc.lng)
-//            mMap.addMarker(MarkerOptions()
-//                    .position(location)
-//                    .title(placeName))
-//        }
 
         // Add a marker in Sydney and move the camera
         val morgantown = LatLng(39.634224, -79.954850)
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(LatLng(morgantown.latitude, morgantown.longitude), 13.0f))
+        mMap.animateCamera(
+            CameraUpdateFactory.newLatLngZoom(
+                LatLng(
+                    morgantown.latitude,
+                    morgantown.longitude
+                ), 13.0f
+            )
+        )
     }
 
 
@@ -391,7 +424,7 @@ class MapFragment : Fragment() , View.OnClickListener, OnMapReadyCallback, Locat
     }
 
     override fun onClick(v: View?) {
-        when(v!!.id) {
+        when (v!!.id) {
             courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
         }
     }

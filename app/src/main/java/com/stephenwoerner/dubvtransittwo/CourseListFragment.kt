@@ -1,22 +1,18 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.course_item.view.*
 import kotlinx.android.synthetic.main.fragment_course_lists.*
 
 /**
@@ -28,26 +24,27 @@ class CourseListFragment : Fragment(), View.OnClickListener {
 //    private var context: Context? = null
 //    private lateinit var mDbHelper: CourseDbAdapter
     private lateinit var mDb: CourseDb
-    private lateinit var courseArrayList: ArrayList<String>
+    private lateinit var courseArrayList: ArrayList<COURSES>
     private lateinit var navController: NavController
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_course_lists, container, false)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         navController = Navigation.findNavController(view)
-//        setContentView(R.layout.course_lists)
-//        context = applicationContext
-        //addButton.setImageResource(android.R.drawable.ic_menu_close_clear_cancel); //getResources().getDrawable(R.drawable.ic_done_black_24dp)
+
         add_course_button.setOnClickListener(this)
         mDb = CourseDb.get(requireContext().applicationContext)
-        course_list.layoutManager = LinearLayoutManager( requireContext(), RecyclerView.VERTICAL, false )
+        course_list.layoutManager =
+            LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
         fillData()
-        //registerForContextMenu(getListView());
     }
 
     override fun onResume() {
@@ -58,71 +55,36 @@ class CourseListFragment : Fragment(), View.OnClickListener {
     private fun fillData() {
         val courseQuery = mDb.coursesQueries.selectAll().executeAsList()
         courseArrayList = ArrayList()
-        for(c in courseQuery) {
-            courseArrayList.add(c.course)
+        for (c in courseQuery) {
+            courseArrayList.add(c)
         }
 //        course_list.notifyDataSe
 //        val adapter = CustomArrayAdapter(applicationContext, R.layout.course_items, courseArrayList)
-        val a = CourseListAdapter( courseArrayList)
+        val a = CourseListAdapter(courseArrayList)
         course_list.adapter = a
     }
 
-    private inner class CustomArrayAdapter<T>(context: Context, textViewResourceId: Int, var categories: ArrayList<T>) : ArrayAdapter<T>(context, textViewResourceId, categories) {
-        override fun getView(position: Int, convertView: View?, parent: ViewGroup): View {
-            if(convertView==null) {
-                val inflater = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-                val v = inflater.inflate(R.layout.course_item, parent, false)
-                val title = categories[position] as String
-                v.course_title.text = title
-                v.course_title.setOnClickListener {
-
-                    val bundle = bundleOf(Pair("isNew", false), Pair("title", courseArrayList[position]))
-                    navController.navigate(R.id.action_courseList_to_editCourse, bundle)
-
-//                    val i = Intent(context, EditCourse::class.java)
-//                    i.putExtra("isNew", false)
-//                    i.putExtra("title", courseArrayList[position])
-//                    startActivity(i)
-                }
-
-                v.delete_button.setOnClickListener {
-                    mDb.coursesQueries.deleteByCourse(title)
-                    fillData()
-                }
-                v.delete_button.setImageDrawable(ContextCompat.getDrawable(context, android.R.drawable.ic_menu_delete))
-                return v
-            }
-            return convertView
-        }
-    }
-
-    fun deleteCourse(str: String) {
-        mDb.coursesQueries.deleteByCourse(str)
-
-    }
-
-
-    private inner class CourseListAdapter(val dataList : ArrayList<String>) : RecyclerView.Adapter<CourseListViewHolder>() {
+    private inner class CourseListAdapter(val dataList: ArrayList<COURSES>) :
+        RecyclerView.Adapter<CourseListViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseListViewHolder {
-            val dirLayout = LayoutInflater.from(parent.context).inflate(R.layout.course_item, parent, false) as RelativeLayout
+            val dirLayout = LayoutInflater.from(parent.context)
+                .inflate(R.layout.course_item, parent, false) as RelativeLayout
             return CourseListViewHolder(dirLayout)
         }
 
         override fun onBindViewHolder(holder: CourseListViewHolder, position: Int) {
-            holder.textView.text = dataList[position]
+            holder.textView.text = dataList[position].course
 
             holder.deleteButton.setOnClickListener {
-                mDb.coursesQueries.deleteByCourse(dataList[position])
-//                val theRemovedItem = dataList.get(position);
-                // remove your item from data base
+                mDb.coursesQueries.deleteByID(dataList[position]._id)
                 dataList.removeAt(position)  // remove the item from list
                 notifyItemRemoved(position)
                 notifyDataSetChanged()
             }
 
             holder.cellBackground.setOnClickListener {
-                val bundle = bundleOf(Pair("isNew", false), Pair("title", courseArrayList[position]))
+                val bundle = bundleOf(Pair("isNew", false), Pair("title", dataList[position].course))
                 navController.navigate(R.id.action_courseList_to_editCourse, bundle)
             }
 
@@ -133,24 +95,15 @@ class CourseListFragment : Fragment(), View.OnClickListener {
         }
     }
 
-    class CourseListViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
-        val textView : TextView = view.findViewById(R.id.course_title)
-        val deleteButton : ImageButton = view.findViewById(R.id.delete_button)
-        val cellBackground : View = view.findViewById(R.id.cell)
+    class CourseListViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView = view.findViewById(R.id.course_title)
+        val deleteButton: ImageView = view.findViewById(R.id.delete_button)
+        val cellBackground: View = view.findViewById(R.id.cell)
+        val id: Int? = null
     }
 
-//    override fun onCellClickListener(position : Int) {
-//        val bundle = bundleOf(Pair("isNew", false), Pair("title", courseArrayList[position]))
-//        navController.navigate(R.id.action_courseList_to_editCourse, bundle)
-//
-//    }
-//
-//    override fun onDeleteClickListener(position: Int) {
-//        TODO("Not yet implemented")
-//    }
-
-    override fun onClick(v: View?) {
-        when(v!!.id){
+    override fun onClick(v: View) {
+        when (v.id) {
             add_course_button.id -> {
                 val bundle = bundleOf(Pair("isNew", true))
                 navController.navigate(R.id.action_courseList_to_editCourse, bundle)

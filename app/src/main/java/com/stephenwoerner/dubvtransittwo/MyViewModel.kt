@@ -31,14 +31,14 @@ class MyViewModel : ViewModel() {
         destination.value = "Destination"
         source.value = "Current Location"
         leavingTimeMillis.value = 0L
-        useCurrentTime.value = false;
+        useCurrentTime.value = false
     }
 
-    fun setSource(dest : String) {
+    fun setSource(dest: String) {
         source.value = dest
     }
 
-    fun setDestination(dest : String) {
+    fun setDestination(dest: String) {
         destination.value = dest
     }
 }

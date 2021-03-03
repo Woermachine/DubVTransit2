@@ -61,5 +61,6 @@
     <fragment
         android:id="@+id/directionFragment"
         android:name="com.stephenwoerner.dubvtransittwo.DirectionFragment"
-        android:label="DirectionFragment" />
+        android:label="DirectionFragment"
+        tools:layout="@layout/fragment_directions" />
 </navigation>

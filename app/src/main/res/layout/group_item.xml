@@ -2,16 +2,19 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical" >
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/heading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:paddingLeft="35dp"
+        android:paddingStart="35dp"
+        android:paddingEnd="35dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
         android:textAppearance="@android:style/TextAppearance.Material.Large"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        tools:text="Example"/>
 
 </LinearLayout>
