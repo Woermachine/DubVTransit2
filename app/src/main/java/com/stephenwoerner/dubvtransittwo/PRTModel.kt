@@ -15,13 +15,14 @@ import kotlin.math.pow
 class PRTModel private constructor() {
     val PRT_STATUS_CLOSED = "7"
 
-    var status : String? = PRT_STATUS_CLOSED
+    var status: String? = PRT_STATUS_CLOSED
     var message = ""
-    private lateinit var duration : Array<String>
+    private lateinit var duration: Array<String>
     private var busesDispatched = ""
 
     private lateinit var stations: Array<String>
-    private val prtStations = arrayOf("WalnutPRT", "BeechurstPRT", "EngineeringPRT", "TowersPRT", "MedicalPRT")
+    private val prtStations =
+        arrayOf("WalnutPRT", "BeechurstPRT", "EngineeringPRT", "TowersPRT", "MedicalPRT")
     private val travelMins = doubleArrayOf(2.5, 5.0, 1.5, 3.0)
     lateinit var prtHashMap: HashMap<String, LatLng>
     lateinit var buildingHashMap: HashMap<String, LatLng>
@@ -31,6 +32,7 @@ class PRTModel private constructor() {
 
     companion object {
         private lateinit var model: PRTModel
+
         @JvmStatic
         fun get(): PRTModel {
             if (!::model.isInitialized) {
@@ -51,7 +53,7 @@ class PRTModel private constructor() {
             DayOfWeek.Monday, DayOfWeek.Wednesday, DayOfWeek.Friday -> if (dateTime.minutes > 45 || dateTime.minutes < 5) time += 7.0
             DayOfWeek.Tuesday, DayOfWeek.Thursday -> if (dateTime.minutes > 40 && dateTime.hours < 55) time += 7.0
             DayOfWeek.Saturday -> time += 2.0
-            DayOfWeek.Sunday -> time+= 24*60*60*1000
+            DayOfWeek.Sunday -> time += 24 * 60 * 60 * 1000
         }
         //Average TravelTime
         //Implement traveltime between stations
@@ -89,7 +91,7 @@ class PRTModel private constructor() {
 
         val departingTime = DateTime.fromUnix(departingTimeInMillis)
 
-        println( "${DirectionFragment::class.simpleName} Open at calendar time ${departingTime.hours}:${departingTime.minutes}")
+        println("${DirectionFragment::class.simpleName} Open at calendar time ${departingTime.hours}:${departingTime.minutes}")
         return when (departingTime.dayOfWeek) {
             DayOfWeek.Sunday -> false
             DayOfWeek.Saturday -> {
@@ -107,7 +109,7 @@ class PRTModel private constructor() {
         }
     }
 
-    fun isOpenNow() : Boolean {
+    fun isOpenNow(): Boolean {
         return status == "1"
     }
 
@@ -135,9 +137,11 @@ class PRTModel private constructor() {
         return true
     }
 
-    data class PRTResponse(var status : String, var message : String, var timestamp : String,
-                           var stations : Array<String>, var bussesDispatched : String,
-                           var duration : Array<String>)
+    data class PRTResponse(
+        var status: String, var message: String, var timestamp: String,
+        var stations: Array<String>, var bussesDispatched: String,
+        var duration: Array<String>
+    )
 
 
     /**
@@ -162,7 +166,8 @@ class PRTModel private constructor() {
         val prtNames = ArrayList(prtHashMap.keys)
         val prtValues = ArrayList(prtHashMap.values)
         for (originPoint in prtValues) {
-            val dist = (point!!.lat - originPoint.lat).pow(2.0) + (point.lng - originPoint.lng).pow(2.0)
+            val dist =
+                (point!!.lat - originPoint.lat).pow(2.0) + (point.lng - originPoint.lng).pow(2.0)
             if (dist < closestVal) {
                 closestVal = dist
                 closest = originPoint
@@ -172,14 +177,14 @@ class PRTModel private constructor() {
     }
 
     private fun initializeHashMaps() {
-        val prtHashMap = hashMapOf<String,LatLng>()
+        val prtHashMap = hashMapOf<String, LatLng>()
         prtHashMap["Beechurst PRT"] = LatLng(39.6348785, -79.95615320000002)
         prtHashMap["Walnut PRT"] = LatLng(39.629987, -79.9571886)
         prtHashMap["Engineering PRT"] = LatLng(39.647082, -79.973278)
         prtHashMap["Towers PRT"] = LatLng(39.6479945, -79.96771839999997)
         prtHashMap["Medical PRT"] = LatLng(39.6547986, -79.9602754)
 
-        val buildingHashMap = hashMapOf<String,LatLng>()
+        val buildingHashMap = hashMapOf<String, LatLng>()
         buildingHashMap["Aerodynamics Laboratory"] = LatLng(39.645725, -79.974273)
         buildingHashMap["Advanced Engineering Research"] = LatLng(39.646060, -79.971092)
         buildingHashMap["Agricultural Sciences Building"] = LatLng(39.645932, -79.969992)
@@ -242,7 +247,7 @@ class PRTModel private constructor() {
         buildingHashMap["Woodburn Hall"] = LatLng(39.635981, -79.955428)
         buildingHashMap["White Hall"] = LatLng(39.632833, -79.954655)
 
-        val dormHashMap = hashMapOf<String,LatLng>()
+        val dormHashMap = hashMapOf<String, LatLng>()
         dormHashMap["Arnold Hall"] = LatLng(39.632370, -79.950616)
         dormHashMap["Arnold Apartments"] = LatLng(39.632370, -79.950616)
         dormHashMap["Boreman Hall North"] = LatLng(39.633622, -79.952193)
@@ -269,7 +274,7 @@ class PRTModel private constructor() {
         dormHashMap["Oakland Hall"] = LatLng(39.649984, -79.962908)
         dormHashMap["University Park"] = LatLng(39.650476, -79.962310)
 
-        val allHashMap = hashMapOf<String,LatLng>()
+        val allHashMap = hashMapOf<String, LatLng>()
         allHashMap.putAll(prtHashMap)
         allHashMap.putAll(buildingHashMap)
         allHashMap.putAll(dormHashMap)
@@ -281,7 +286,7 @@ class PRTModel private constructor() {
         this.allHashMap = allHashMap
     }
 
-    fun findLatLng( name : String , currentLocation: LatLng, context : Context ) : LatLng? {
+    fun findLatLng(name: String, currentLocation: LatLng, context: Context): LatLng? {
         return when (name) {
             context.getString(R.string.current_location) -> currentLocation
             context.getString(R.string.destination) -> null

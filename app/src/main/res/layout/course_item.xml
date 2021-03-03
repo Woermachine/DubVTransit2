@@ -15,19 +15,21 @@
         android:layout_alignParentStart="true"
         android:layout_alignTop="@+id/delete_button"
         android:layout_alignBottom="@+id/delete_button"
-        android:textColor="#000000"
+        android:textColor="#A6A6A6"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
         tool:text="text"
         android:textAppearance="@android:style/TextAppearance.Material.Medium"
         android:gravity="center_vertical"/>
 
-    <ImageButton
+    <ImageView
         android:id="@+id/delete_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/ic_menu_delete"
+        app:srcCompat="@drawable/delete"
         android:layout_alignParentTop="true"
         android:layout_alignParentEnd="true"
-        style="@style/Widget.AppCompat.Button.Borderless"
+        android:padding="10dp"
         android:contentDescription="@string/delete_course_desc" />
 
 

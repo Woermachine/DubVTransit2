@@ -16,7 +16,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ProgressBar
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
@@ -41,25 +40,25 @@ class DirectionFragment : Fragment(), LocationListener {
 
     enum class Route { CAR, BUS, WALK, PRT }
 
-    private lateinit var destinationStr : String
-    private lateinit var closestPRTA : String
-    private lateinit var closestPRTB : String
-    private var useCurrentTime : Boolean = false
+    private lateinit var destinationStr: String
+    private lateinit var closestPRTA: String
+    private lateinit var closestPRTB: String
+    private var useCurrentTime: Boolean = false
+    private var selected : Int = R.id.carButton
 
-    private lateinit var origin : LatLng
-    private lateinit var destination : LatLng
+    private lateinit var origin: LatLng
+    private lateinit var destination: LatLng
 
     private var leavingTime = 0L
 
-    private lateinit var locationManager : LocationManager
+    private lateinit var locationManager: LocationManager
 
-    private lateinit var carDirections : DirectionAdapter
-    private lateinit var busDirections : DirectionAdapter
-    private lateinit var walkingDirections : DirectionAdapter
-    private lateinit var prtDirections : DirectionAdapter
+    private lateinit var carDirections: DirectionAdapter
+    private lateinit var busDirections: DirectionAdapter
+    private lateinit var walkingDirections: DirectionAdapter
+    private lateinit var prtDirections: DirectionAdapter
 
-    private var leavingTimeMillis : Long = 0L
-//    private var context = this@DirectionActivity
+    private var leavingTimeMillis: Long = 0L
     private val model = PRTModel.get()
 
     private val mapsDataClient = MapsDataClient()
@@ -70,8 +69,13 @@ class DirectionFragment : Fragment(), LocationListener {
     private val location: LatLng
         get() {
             var currentLocation = LatLng(0.0, 0.0)
-            locationManager = requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if (ContextCompat.checkSelfPermission(requireActivity(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            locationManager =
+                requireActivity().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            if (ContextCompat.checkSelfPermission(
+                    requireActivity(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
                 ActivityCompat.requestPermissions(
                     requireActivity(),
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
@@ -81,8 +85,6 @@ class DirectionFragment : Fragment(), LocationListener {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
                 val criteria = Criteria()
                 criteria.accuracy = Criteria.ACCURACY_FINE
-//                val providers = locationManager.allProviders
-//                val bestProvider = providers[0]
                 var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
                 while (location == null) {
                     location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
@@ -104,7 +106,13 @@ class DirectionFragment : Fragment(), LocationListener {
                 val morgantown = LatLng(39.634224, -79.954850)
                 val hundredMilesInKM = 160.934
 
-                if( getDistanceFromLatLonInKm(morgantown.lat, morgantown.lng, lat, lon) > hundredMilesInKM ) {
+                if (getDistanceFromLatLonInKm(
+                        morgantown.lat,
+                        morgantown.lng,
+                        lat,
+                        lon
+                    ) > hundredMilesInKM
+                ) {
                     navController.navigateUp()
                 }
 
@@ -112,7 +120,11 @@ class DirectionFragment : Fragment(), LocationListener {
             return currentLocation
         }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         return inflater.inflate(R.layout.fragment_directions, container, false)
     }
 
@@ -142,7 +154,7 @@ class DirectionFragment : Fragment(), LocationListener {
             originStr = requireArguments().getString("origin")!!
             destinationStr = requireArguments().getString("destination")!!
             useCurrentTime = requireArguments().getBoolean("useCurrentTime", true)
-            leavingTimeMillis =  requireArguments().getLong(
+            leavingTimeMillis = requireArguments().getLong(
                 "leavingTime",
                 Calendar.getInstance().timeInMillis
             )
@@ -160,7 +172,7 @@ class DirectionFragment : Fragment(), LocationListener {
         origin = when (originStr) {
             getString(R.string.current_location) -> location
             else -> {
-                val lookupString = if(model.allHashMap.containsKey(originStr)) {
+                val lookupString = if (model.allHashMap.containsKey(originStr)) {
                     originStr
                 } else {
                     val courseDb = CourseDb.get(requireContext().applicationContext)
@@ -177,15 +189,17 @@ class DirectionFragment : Fragment(), LocationListener {
             destinationStr = course.location
         }
         destination = model.allHashMap[destinationStr]!!
-        navigationButton.setOnClickListener { AlertDialog.Builder(requireContext()).setView(R.layout.alert_contents).setNegativeButton(
-            "Cancel"
-        ) { dialog, _ -> dialog.dismiss() }.setCancelable(true).setTitle(R.string.alert_title).setIcon(
-            R.drawable.ic_navigation_black_36dp
-        ).setMessage(R.string.alert_message).show() }
 
-        progress = ProgressBar(context)
-        progress.isIndeterminate = true
-        progress.visibility = View.VISIBLE
+        navigationButton.setOnClickListener {
+            val dest = if(selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest
+            AlertDialog.Builder(requireActivity())
+                .setIcon(R.drawable.navigation_black)
+                .setTitle(R.string.alert_title)
+                .setMessage(dest)
+                .setPositiveButton("Open") { _,_ -> openMaps(dest) }
+                .setCancelable(true)
+                .show()
+        }
 
         CoroutineScope(Dispatchers.IO).launch {
             model.requestPRTStatus()
@@ -222,8 +236,8 @@ class DirectionFragment : Fragment(), LocationListener {
 
         val btnSelectColor = getMuhDrawable(R.color.ButtonSelected)
 
-        fun getButtonText(stepsAndDur : MapsDataClient.StepsAndDuration) : String {
-            if(stepsAndDur.isAvailable) {
+        fun getButtonText(stepsAndDur: MapsDataClient.StepsAndDuration): String {
+            if (stepsAndDur.isAvailable) {
                 return "${stepsAndDur.duration / 60} min"
             }
             return ""
@@ -232,9 +246,9 @@ class DirectionFragment : Fragment(), LocationListener {
         busButton.text = getButtonText(mapsTaskResults.busStepsAndDuration)
         walkButton.text = getButtonText(mapsTaskResults.walkStepsAndDuration)
         prtButton.text = getButtonText(mapsTaskResults.prtStepsAndDuration)
-        carButton.text = getButtonText( mapsTaskResults.carStepsAndDuration)
+        carButton.text = getButtonText(mapsTaskResults.carStepsAndDuration)
 
-        list2.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL,false)
+        list2.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         list2.adapter = directionsStepArrayAdapter
         prtBadge.background = prtButtonColor()
 
@@ -258,15 +272,16 @@ class DirectionFragment : Fragment(), LocationListener {
      * Change directions
      * @param v the button which was pressed
      */
-    fun changeSelected(v: View) {
+    private fun changeSelected(v: View) {
         val unselected = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonUnselected))
         carButton.background = unselected
         prtButton.background = unselected
         walkButton.background = unselected
         busButton.background = unselected
 
+        selected = v.id
         val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonSelected))
-        list2.adapter = when (v.id) {
+        list2.adapter = when (selected) {
             R.id.busButton -> {
                 busButton.background = selectedColor
                 busDirections
@@ -302,28 +317,32 @@ class DirectionFragment : Fragment(), LocationListener {
 
     /**
      * Open maps with a determined intent
-     * @param v the TextView which was clicked
+     * @param strDest the string int representing prt or destination
      */
-    fun openMaps(v: View) {
-        val prt = model.allHashMap[closestPRTA]
-        val uri: String
-        uri = if (v.id == R.id.option_dest) {
-            "http://maps.google.com/maps?q=loc:" + destination.lat + "," + destination.lng + " (" + destinationStr + ")"
-        } else {
-            if (prt != null) {
-                "http://maps.google.com/maps?q=loc:" + prt.lat + "," + prt.lng + " ( Closest PRT Station )"
-            } else {
-                ""
+    private fun openMaps(strDest: Int) {
+        val uriString = when(strDest) {
+            R.string.nearest_dest -> "http://maps.google.com/maps?q=loc:" + destination.lat + "," + destination.lng + " (" + destinationStr + ")"
+            else -> {
+                val prt = model.allHashMap[closestPRTA]
+                if (prt != null) {
+                    "http://maps.google.com/maps?q=loc:" + prt.lat + "," + prt.lng + " ( Closest PRT Station )"
+                } else {
+                    ""
+                }
             }
         }
-        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uriString))
         requireActivity().startActivity(intent)
     }
 
-    private fun prtButtonColor() : Drawable {
+    private fun prtButtonColor(): Drawable {
         return if (!useCurrentTime && model.isOpen(leavingTime))
             getMuhDrawable(R.drawable.rounded_textview_yellow)
-        else if (useCurrentTime && model.openBetweenStations(closestPRTA, closestPRTB) && model.status != "7")
+        else if (useCurrentTime && model.openBetweenStations(
+                closestPRTA,
+                closestPRTB
+            ) && model.status != "7"
+        )
             getMuhDrawable(R.drawable.rounded_textview_yellow)
         else if (model.status == "1")
             getMuhDrawable(R.drawable.rounded_textview_green)
@@ -331,7 +350,7 @@ class DirectionFragment : Fragment(), LocationListener {
             getMuhDrawable(R.drawable.rounded_textview_red)
     }
 
-    private fun getMuhDrawable(id: Int) : Drawable {
+    private fun getMuhDrawable(id: Int): Drawable {
         return ContextCompat.getDrawable(requireContext().applicationContext, id)!!
     }
 
@@ -348,30 +367,34 @@ class DirectionFragment : Fragment(), LocationListener {
         // Unused
     }
 
-    companion object {
-        private lateinit var progress: ProgressBar
-    }
-
-    private fun getDistanceFromLatLonInKm(lat1: Double, lon1: Double, lat2: Double, lon2: Double) : Double{
+    private fun getDistanceFromLatLonInKm(
+        lat1: Double,
+        lon1: Double,
+        lat2: Double,
+        lon2: Double
+    ): Double {
         val r = 6371 // Radius of the earth in km
         val dLat = deg2rad(lat2 - lat1)  // deg2rad below
         val dLon = deg2rad(lon2 - lon1)
-        val a = sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
-            dLon / 2
-        )
+        val a =
+            sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
+                dLon / 2
+            )
 
         val c = 2 * atan2(sqrt(a), sqrt(1 - a))
         return r * c // Distance in km
     }
 
-    private fun deg2rad(deg: Double) : Double {
+    private fun deg2rad(deg: Double): Double {
         return deg * (PI / 180.0)
     }
 
-    class DirectionAdapter(val dataList : ArrayList<MapsDataClient.SimpleDirections>) : RecyclerView.Adapter<DirectionsViewHolder>() {
+    class DirectionAdapter(private val dataList: ArrayList<MapsDataClient.SimpleDirections>) :
+        RecyclerView.Adapter<DirectionsViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DirectionsViewHolder {
-            val dirLayout = LayoutInflater.from(parent.context).inflate(R.layout.list_item, parent, false) as RelativeLayout
+            val dirLayout = LayoutInflater.from(parent.context)
+                .inflate(R.layout.list_item, parent, false) as RelativeLayout
             return DirectionsViewHolder(dirLayout)
         }
 
@@ -398,9 +421,9 @@ class DirectionFragment : Fragment(), LocationListener {
         }
     }
 
-    class DirectionsViewHolder(val view : View) : RecyclerView.ViewHolder(view) {
-        val textView : TextView = view.findViewById(R.id.list_item)
-        val distance : TextView = view.findViewById(R.id.distance)
-        val duration : TextView = view.findViewById(R.id.duration)
+    class DirectionsViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView = view.findViewById(R.id.list_item)
+        val distance: TextView = view.findViewById(R.id.distance)
+        val duration: TextView = view.findViewById(R.id.duration)
     }
 }

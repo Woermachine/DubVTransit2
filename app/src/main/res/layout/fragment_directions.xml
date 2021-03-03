@@ -74,7 +74,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#FFFFFF"
-            android:drawableTop="@mipmap/bus_icon"
+            android:drawableTop="@drawable/bus"
+            android:drawableTint="@android:color/black"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
             android:paddingTop="5dp"
@@ -87,8 +88,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#FFFFFF"
-            android:drawableTop="@mipmap/prt_icon"
-            android:scaleType="fitXY"
+            android:drawableTop="@drawable/ic_prt_icon"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
             android:paddingTop="5dp"
@@ -101,7 +101,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#FFFFFF"
-            android:drawableTop="@mipmap/walking"
+            android:drawableTop="@drawable/walking"
+            android:drawableTint="@android:color/black"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
             android:paddingTop="5dp"
@@ -114,7 +115,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:background="#FFFFFF"
-            android:drawableTop="@mipmap/car_icon"
+            android:drawableTop="@drawable/car"
+            android:drawableTint="@android:color/black"
             android:elevation="0dp"
             android:text="@string/ZeroMin"
             android:textColor="#000000"
@@ -154,8 +156,21 @@
         android:layout_alignParentEnd="true"
         android:clickable="true"
         android:focusable="true"
-        app:srcCompat="@drawable/ic_navigation_white_36dp"
+        app:srcCompat="@drawable/navigation_white"
         android:layout_margin="10dp"
         android:elevation="2dp"/>
 
+    <RelativeLayout
+        android:id="@+id/progress"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#8A000000"
+        tools:visibility="gone">
+        <ProgressBar
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:indeterminate="true"
+            />
+    </RelativeLayout>
 </RelativeLayout>
