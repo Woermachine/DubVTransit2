@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.os.bundleOf
@@ -24,7 +24,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
 //    private var context: Context? = null
 //    private lateinit var mDbHelper: CourseDbAdapter
     private lateinit var mDb: CourseDb
-    private lateinit var courseArrayList: ArrayList<String>
+    private lateinit var courseArrayList: ArrayList<COURSES>
     private lateinit var navController: NavController
 
     override fun onCreateView(
@@ -56,7 +56,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
         val courseQuery = mDb.coursesQueries.selectAll().executeAsList()
         courseArrayList = ArrayList()
         for (c in courseQuery) {
-            courseArrayList.add(c.course)
+            courseArrayList.add(c)
         }
 //        course_list.notifyDataSe
 //        val adapter = CustomArrayAdapter(applicationContext, R.layout.course_items, courseArrayList)
@@ -64,7 +64,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
         course_list.adapter = a
     }
 
-    private inner class CourseListAdapter(val dataList: ArrayList<String>) :
+    private inner class CourseListAdapter(val dataList: ArrayList<COURSES>) :
         RecyclerView.Adapter<CourseListViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CourseListViewHolder {
@@ -74,18 +74,17 @@ class CourseListFragment : Fragment(), View.OnClickListener {
         }
 
         override fun onBindViewHolder(holder: CourseListViewHolder, position: Int) {
-            holder.textView.text = dataList[position]
+            holder.textView.text = dataList[position].course
 
             holder.deleteButton.setOnClickListener {
-                mDb.coursesQueries.deleteByCourse(dataList[position])
+                mDb.coursesQueries.deleteByID(dataList[position]._id)
                 dataList.removeAt(position)  // remove the item from list
                 notifyItemRemoved(position)
                 notifyDataSetChanged()
             }
 
             holder.cellBackground.setOnClickListener {
-                val bundle =
-                    bundleOf(Pair("isNew", false), Pair("title", courseArrayList[position]))
+                val bundle = bundleOf(Pair("isNew", false), Pair("title", dataList[position].course))
                 navController.navigate(R.id.action_courseList_to_editCourse, bundle)
             }
 
@@ -98,12 +97,13 @@ class CourseListFragment : Fragment(), View.OnClickListener {
 
     class CourseListViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textView: TextView = view.findViewById(R.id.course_title)
-        val deleteButton: ImageButton = view.findViewById(R.id.delete_button)
+        val deleteButton: ImageView = view.findViewById(R.id.delete_button)
         val cellBackground: View = view.findViewById(R.id.cell)
+        val id: Int? = null
     }
 
-    override fun onClick(v: View?) {
-        when (v!!.id) {
+    override fun onClick(v: View) {
+        when (v.id) {
             add_course_button.id -> {
                 val bundle = bundleOf(Pair("isNew", true))
                 navController.navigate(R.id.action_courseList_to_editCourse, bundle)

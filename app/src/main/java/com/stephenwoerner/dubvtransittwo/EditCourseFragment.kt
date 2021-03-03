@@ -55,26 +55,30 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         courseDb = CourseDb.get(requireContext().applicationContext)
 
         done_button.setOnClickListener {
-            if (isNew)
-                courseDb.coursesQueries.insert(
-                    course = editable_course_title.text.toString(),
-                    location = startBtn.text.toString(), note = course_note.text.toString()
-                )
-            else
-                courseDb.coursesQueries.update(
-                    course = editable_course_title.text.toString(),
-                    location = startBtn.text.toString(), note = course_note.text.toString(),
-                    _id = rowId,
-                )
-            navController.navigateUp()
+            if(locationBtn.text.toString() == getString(R.string.select_location)) {
+                Toast.makeText(context, "Select a location, before saving", Toast.LENGTH_SHORT).show()
+            } else {
+                if (isNew)
+                    courseDb.coursesQueries.insert(
+                        course = editable_course_title.text.toString(),
+                        location = locationBtn.text.toString(), note = course_note.text.toString()
+                    )
+                else
+                    courseDb.coursesQueries.update(
+                        course = editable_course_title.text.toString(),
+                        location = locationBtn.text.toString(), note = course_note.text.toString(),
+                        _id = rowId,
+                    )
+                navController.navigateUp()
+            }
         }
-        startBtn.setOnClickListener {
+        locationBtn.setOnClickListener {
             showLocationList()
         }
         if (!isNew) fillData()
 
         if (returned != null)
-            startBtn.text = returned
+            locationBtn.text = returned
 
         parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
     }
@@ -84,14 +88,15 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         if (course != null) {
             rowId = course._id
             editable_course_title.setText(course.course)
-            startBtn.text = course.location
+            locationBtn.text = course.location
             course_note.setText(course.note)
         }
     }
 
     private fun showLocationList() {
         val bundle = bundleOf(
-            Pair(LocationListFragment.useCourses, false),
+            Pair(LocationListFragment.allowUseCourses, false),
+            Pair(LocationListFragment.allowCurrLocation, false),
             Pair(LocationListFragment.requestKeyArgKey, requestKey)
         )
         navController.navigate(R.id.action_editCourse_to_pickLocationExpandable, bundle)

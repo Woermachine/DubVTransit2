@@ -193,7 +193,7 @@ class DirectionFragment : Fragment(), LocationListener {
         navigationButton.setOnClickListener {
             val dest = if(selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest
             AlertDialog.Builder(requireActivity())
-                .setIcon(R.drawable.ic_navigation_black_36dp)
+                .setIcon(R.drawable.navigation_black)
                 .setTitle(R.string.alert_title)
                 .setMessage(dest)
                 .setPositiveButton("Open") { _,_ -> openMaps(dest) }

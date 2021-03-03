@@ -156,7 +156,7 @@
         android:layout_alignParentEnd="true"
         android:clickable="true"
         android:focusable="true"
-        app:srcCompat="@drawable/ic_navigation_white_36dp"
+        app:srcCompat="@drawable/navigation_white"
         android:layout_margin="10dp"
         android:elevation="2dp"/>
 

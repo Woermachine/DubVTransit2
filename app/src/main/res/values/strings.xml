@@ -14,6 +14,7 @@
     <string name="prt_status">PRT Status</string>
     <string name="continue_button">Continue</string>
     <string name="current_location">Current Location</string>
+    <string name="select_location">Select Location</string>
     <string name="background_desc">Continue Button</string>
 
     <!-- Content Description -->

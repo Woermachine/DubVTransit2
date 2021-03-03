@@ -21,22 +21,18 @@ class LocationListFragment : Fragment() {
         const val requestKeyArgKey = "requestKey"
         const val requestCodeArgKey = "requestCode"
         const val returnVal = "selected"
-        const val useCourses = "useCourses"
+        const val allowUseCourses = "useCourses"
+        const val allowCurrLocation = "allowCurrLocation"
     }
 
     private val NAME = "NAME"
 
     // string arrays for group and child items
-    private var groupItems =
-        arrayOf("PRT Stations", "Campus Buildings", "Dorms", "My Classes", "Other")
-    private var childItems =
-        arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
+    private var groupItems = arrayOf("PRT Stations", "Campus Buildings", "Dorms")
+    private var childItems = arrayOf<Array<String>>(arrayOf(), arrayOf(), arrayOf())
     private val groupData: MutableList<Map<String, String?>> = ArrayList()
     private val childData: MutableList<List<Map<String, String?>>> = ArrayList()
 
-    //No Courses
-    private val groupItemsB = arrayOf("PRT Stations", "Campus Buildings", "Dorms", "Other")
-    private val childItemsB = arrayOf(arrayOf(), arrayOf(), arrayOf(), arrayOf("Current Location"))
 
     lateinit var navController: NavController
     lateinit var requestKey: String
@@ -64,10 +60,16 @@ class LocationListFragment : Fragment() {
         if (args.containsKey(requestCodeArgKey))
             requestCode = args.getInt(requestCodeArgKey)
 
-        val useCourses = args.getBoolean(useCourses, true)
-        if (!useCourses) {
-            groupItems = groupItemsB
-            childItems = childItemsB
+        val useCourses = args.getBoolean(allowUseCourses, true)
+        if (useCourses) {
+            groupItems += "My Classes"
+            childItems += arrayOf<String>()
+        }
+
+        val allowCurLoc = args.getBoolean(allowCurrLocation, true)
+        if (allowCurLoc) {
+            groupItems += "Other"
+            childItems += arrayOf("Current Location")
         }
 
         val prtModel = PRTModel.get()

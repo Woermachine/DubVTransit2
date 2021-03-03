@@ -14,6 +14,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Animation
+import android.view.animation.RotateAnimation
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -36,6 +38,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
+
 
 val TAG: String = MapFragment::class.java.simpleName
 
@@ -132,9 +135,9 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         destBtn.setOnClickListener { showLocationList(it) }
 
         viewModel.source.observe(viewLifecycleOwner, { item ->
-            startBtn.text = item
+            locationBtn.text = item
         })
-        startBtn.setOnClickListener { showLocationList(it) }
+        locationBtn.setOnClickListener { showLocationList(it) }
 
         leavingTime = Calendar.getInstance()
         timeBtn.text = timeFormat.format(leavingTime.time)
@@ -152,7 +155,19 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             }
         }
 
-        prtStatusBtn.setOnClickListener {
+        prt_badge.setOnClickListener {
+            val rotateAnimation = RotateAnimation(
+                0F,
+                359F,
+                Animation.RELATIVE_TO_SELF,
+                0.5f,
+                Animation.RELATIVE_TO_SELF,
+                0.5f
+            )
+            rotateAnimation.repeatCount = Animation.ABSOLUTE
+            rotateAnimation.repeatMode = Animation.RESTART
+            rotateAnimation.duration = 1000
+            refreshBtn.startAnimation(rotateAnimation)
             CoroutineScope(Dispatchers.IO).launch {
                 val prtOn = model.requestPRTStatus()
                 activity?.runOnUiThread {
@@ -167,7 +182,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 }
             }
         }
-        prtStatusBtn.setOnLongClickListener {
+        prt_badge.setOnLongClickListener {
             showPRTDialog()
             true
         }
@@ -184,7 +199,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         destBtn.setOnClickListener {
             showLocationList(it)
         }
-        startBtn.setOnClickListener {
+        locationBtn.setOnClickListener {
             showLocationList(it)
         }
         timeBtn.setOnClickListener {
@@ -226,6 +241,9 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             Pair(LocationListFragment.requestKeyArgKey, requestKey),
             Pair(LocationListFragment.requestCodeArgKey, requestCode)
         )
+        if(v.id == R.id.destBtn)
+            bundle.putBoolean(LocationListFragment.allowCurrLocation, false)
+
         navController.navigate(R.id.action_mapFragment_to_pickLocationExpandable, bundle)
     }
 
@@ -243,7 +261,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 )
                 when (requestCode) {
                     R.id.destBtn -> viewModel.setDestination(selected)
-                    R.id.startBtn -> viewModel.setSource(selected)
+                    R.id.locationBtn -> viewModel.setSource(selected)
                 }
             }
         }
@@ -316,7 +334,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         }
 
         val bundle = Bundle().apply {
-            putString("origin", startBtn.text.toString())
+            putString("origin", locationBtn.text.toString())
             putString("destination", destBtn.text.toString())
             putLong("leavingTime", leavingTime.timeInMillis)
             putBoolean("useCurrentTime", useCurrentTime)
