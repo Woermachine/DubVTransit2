@@ -44,13 +44,11 @@
 
             <Button
                 android:id="@+id/locationBtn"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:contentDescription="@string/change_start"
-                android:text="@string/current_location"
-                android:textColor="@color/colorAccent"
-                android:textSize="16sp" />
+                android:text="@string/current_location"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -62,12 +60,10 @@
 
             <Button
                 android:id="@+id/destBtn"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/destination"
-                android:textColor="@color/colorAccent"
-                android:textSize="16sp" />
+                android:text="@string/destination"/>
 
         </GridLayout>
 
@@ -135,11 +131,9 @@
         android:layout_alignParentEnd="true"
         android:layout_margin="10dp"
         android:backgroundTint="@color/colorPrimary"
-        android:clickable="true"
         android:contentDescription="@string/open_calendar"
         android:elevation="6dp"
-        android:focusable="true"
-        android:tint="@android:color/black"
+        style="@style/FAB"
         app:layout_constraintBottom_toTopOf="@id/continueBtn"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/calendar" />
@@ -151,30 +145,13 @@
         android:layout_above="@id/prt_badge"
         android:layout_alignParentEnd="true"
         android:layout_margin="10dp"
-        android:backgroundTint="@color/colorPrimary"
-        android:clickable="true"
         android:contentDescription="@string/send_request"
         android:elevation="6dp"
-        android:focusable="true"
-        android:tint="@android:color/black"
+        style="@style/FAB"
         app:layout_constraintBottom_toTopOf="@+id/prt_badge"
         app:layout_constraintEnd_toEndOf="parent"
         app:srcCompat="@drawable/navigation" />
-<!--    android:translationZ="10dp"-->
 
-<!--    <com.google.android.material.floatingactionbutton.FloatingActionButton-->
-<!--        android:id="@+id/prtStatusBtn"-->
-<!--        android:layout_width="wrap_content"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_above="@id/prt_badge"-->
-<!--        android:layout_alignParentEnd="true"-->
-<!--        android:layout_margin="10dp"-->
-<!--        android:padding="10dp"-->
-<!--        android:contentDescription="@string/status"-->
-<!--        app:srcCompat="@mipmap/prt_icon"-->
-<!--        android:backgroundTint="@color/colorPrimary"-->
-<!--        android:elevation="10dp"-->
-<!--        android:translationZ="10dp"/>-->
     <RelativeLayout
         android:id="@+id/prt_badge"
         android:layout_width="match_parent"
@@ -191,7 +168,8 @@
             android:layout_marginEnd="10dp"
             android:contentDescription="@string/status"
             android:padding="5dp"
-            app:srcCompat="@drawable/refresh_black" />
+            app:srcCompat="@drawable/refresh_black"
+            style="@style/ImageLight" />
 
         <ImageView
             android:id="@+id/prtStatusBtn"
@@ -201,7 +179,8 @@
             android:contentDescription="@string/status"
             android:elevation="10dp"
             android:padding="5dp"
-            app:srcCompat="@mipmap/prt_icon" />
+            app:srcCompat="@drawable/ic_prt_icon_36"
+            style="@style/ImageLight"/>
     </RelativeLayout>
 <!--    <TextView-->
 <!--        android:id="@+id/prt_badge"-->

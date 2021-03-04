@@ -234,7 +234,7 @@ class DirectionFragment : Fragment(), LocationListener {
             else -> carDirections
         }
 
-        val btnSelectColor = getMuhDrawable(R.color.ButtonSelected)
+        val btnSelectColor = getMuhDrawable(R.color.buttonSelectedLight)
 
         fun getButtonText(stepsAndDur: MapsDataClient.StepsAndDuration): String {
             if (stepsAndDur.isAvailable) {
@@ -273,14 +273,14 @@ class DirectionFragment : Fragment(), LocationListener {
      * @param v the button which was pressed
      */
     private fun changeSelected(v: View) {
-        val unselected = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonUnselected))
+        val unselected = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.buttonUnselectedLight))
         carButton.background = unselected
         prtButton.background = unselected
         walkButton.background = unselected
         busButton.background = unselected
 
         selected = v.id
-        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.ButtonSelected))
+        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.buttonSelectedLight))
         list2.adapter = when (selected) {
             R.id.busButton -> {
                 busButton.background = selectedColor

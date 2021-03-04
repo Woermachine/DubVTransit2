@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#EAAA00</color>
-    <color name="colorPrimaryDark">#002855</color>
+    <color name="colorPrimaryDark">#B55500</color>
     <color name="colorAccent">#0033A0</color>
-    <color name="colorDown">#d50000</color>
+    <color name="colorAccentDark">#000B75</color>
+
+    <color name="colorDown">#EF5350</color>
+    <color name="colorDownDark">#A50000</color>
     <color name="colorUp">#64dd17</color>
-    <color name="ButtonSelected">#25616161</color>
-    <color name="ButtonUnselected">#04616161</color>
+    <color name="colorUpDark">#558B2F</color>
+
+    <color name="iconLight">#FFEBEE</color>
+    <color name="iconDark">#3E3E3E</color>
+
+    <color name="buttonSelectedLight">#616161</color>
+    <color name="buttonUnselectedLight">#EAEAEA</color>
+
+    <color name="buttonSelectedDark">#6E6E6E</color>
+    <color name="buttonUnselectedDark">#3E3E3E</color>
 <!--    <color name="ic_launcher_background">#005eb8</color>-->
 </resources>

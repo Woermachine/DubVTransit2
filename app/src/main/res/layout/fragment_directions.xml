@@ -154,8 +154,7 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/list2"
         android:layout_alignParentEnd="true"
-        android:clickable="true"
-        android:focusable="true"
+        style="@style/FAB"
         app:srcCompat="@drawable/navigation_white"
         android:layout_margin="10dp"
         android:elevation="2dp"/>
