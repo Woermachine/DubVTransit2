@@ -37,10 +37,13 @@
             android:layout_height="wrap_content">
 
             <TextView
+                style="@style/Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_row="0"
+                android:layout_column="0"
                 android:text="@string/from_main"
-                android:textColor="#FF000000" />
+                />
 
             <Button
                 android:id="@+id/locationBtn"
@@ -51,12 +54,12 @@
                 android:text="@string/current_location"/>
 
             <TextView
+                style="@style/Text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_row="1"
                 android:layout_column="0"
-                android:text="@string/to_main"
-                android:textColor="#FF000000" />
+                android:text="@string/to_main"/>
 
             <Button
                 android:id="@+id/destBtn"
@@ -130,7 +133,6 @@
         android:layout_above="@id/prt_badge"
         android:layout_alignParentEnd="true"
         android:layout_margin="10dp"
-        android:backgroundTint="@color/colorPrimary"
         android:contentDescription="@string/open_calendar"
         android:elevation="6dp"
         style="@style/FAB"
@@ -147,11 +149,12 @@
         android:layout_margin="10dp"
         android:contentDescription="@string/send_request"
         android:elevation="6dp"
-        style="@style/FAB"
         app:layout_constraintBottom_toTopOf="@+id/prt_badge"
         app:layout_constraintEnd_toEndOf="parent"
-        app:srcCompat="@drawable/navigation" />
+        app:srcCompat="@drawable/navigation"
+        style="@style/FAB"/>
 
+<!--    style="@style/FAB"-->
     <RelativeLayout
         android:id="@+id/prt_badge"
         android:layout_width="match_parent"

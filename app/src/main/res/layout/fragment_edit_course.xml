@@ -32,7 +32,7 @@
         android:layout_below="@id/editable_course_title"
         android:text="@string/course_destination" />
 
-    <Button
+    <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/locationBtn"
         style="@style/ColoredButton"
         android:layout_width="wrap_content"
@@ -56,7 +56,7 @@
         android:id="@+id/done_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/ic_menu_save"
+        app:srcCompat="@drawable/save"
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:contentDescription="@string/save_button_desc"

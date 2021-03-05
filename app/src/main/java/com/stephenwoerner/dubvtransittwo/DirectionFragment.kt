@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
 import android.location.Criteria
 import android.location.Location
@@ -234,7 +233,11 @@ class DirectionFragment : Fragment(), LocationListener {
             else -> carDirections
         }
 
-        val btnSelectColor = getMuhDrawable(R.color.buttonSelectedLight)
+        val btnSelectColor = if(AppUtils.isDarkTheme(requireActivity()))
+            getMuhDrawable(R.color.colorAccentDark)
+        else
+            getMuhDrawable(R.color.colorPrimaryDark)
+
 
         fun getButtonText(stepsAndDur: MapsDataClient.StepsAndDuration): String {
             if (stepsAndDur.isAvailable) {
@@ -273,14 +276,23 @@ class DirectionFragment : Fragment(), LocationListener {
      * @param v the button which was pressed
      */
     private fun changeSelected(v: View) {
-        val unselected = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.buttonUnselectedLight))
+        val unselected = if(AppUtils.isDarkTheme(requireActivity()))
+            getMuhDrawable(R.color.colorAccent)
+        else
+            getMuhDrawable(R.color.colorPrimary)
+
         carButton.background = unselected
         prtButton.background = unselected
         walkButton.background = unselected
         busButton.background = unselected
 
+        val selectedColor = if(AppUtils.isDarkTheme(requireActivity()))
+            getMuhDrawable(R.color.colorAccentDark)
+        else
+            getMuhDrawable(R.color.colorPrimaryDark)
+
         selected = v.id
-        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.buttonSelectedLight))
+//        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.buttonSelectedLight))
         list2.adapter = when (selected) {
             R.id.busButton -> {
                 busButton.background = selectedColor

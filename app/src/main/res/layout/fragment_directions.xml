@@ -11,15 +11,17 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:id="@+id/from_to"
+        style="@style/TextSurface"
         android:background="@color/colorPrimary">
 
         <TextView
             android:id="@+id/start_location"
-            android:contentDescription="@string/origin"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/origin"
             android:text="@string/from"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+            android:padding="10dp"
+            style="@style/Text"/>
 
         <View
             android:layout_width="match_parent"
@@ -33,7 +35,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="@string/to"
-            android:textAppearance="@android:style/TextAppearance.Material.Medium" />
+            android:padding="10dp"
+            style="@style/Text"/>
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
@@ -67,61 +70,55 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentStart="true">
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/busButton"
             android:contentDescription="@string/bus_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#FFFFFF"
             android:drawableTop="@drawable/bus"
-            android:drawableTint="@android:color/black"
             android:text="@string/ZeroMin"
-            android:textColor="#000000"
-            android:paddingTop="5dp"
-            tools:ignore="ButtonStyle" />
+            android:paddingTop="15dp"
+            android:paddingBottom="10dp"
+            style="@style/Button" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/prtButton"
             android:contentDescription="@string/prt_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#FFFFFF"
-            android:drawableTop="@drawable/ic_prt_icon"
             android:text="@string/ZeroMin"
-            android:textColor="#000000"
-            android:paddingTop="5dp"
-            tools:ignore="ButtonStyle" />
+            android:drawableTop="@drawable/ic_prt_icon"
+            android:paddingTop="15dp"
+            android:paddingBottom="10dp"
+            style="@style/Button"/>
+<!--        tools:ignore="ButtonStyle"-->
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/walkButton"
             android:contentDescription="@string/walking_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#FFFFFF"
             android:drawableTop="@drawable/walking"
-            android:drawableTint="@android:color/black"
             android:text="@string/ZeroMin"
-            android:textColor="#000000"
-            android:paddingTop="5dp"
-            tools:ignore="ButtonStyle" />
+            android:paddingTop="15dp"
+            android:paddingBottom="10dp"
+            style="@style/Button" />
 
-        <Button
+        <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/carButton"
             android:contentDescription="@string/walking_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:background="#FFFFFF"
             android:drawableTop="@drawable/car"
-            android:drawableTint="@android:color/black"
             android:elevation="0dp"
             android:text="@string/ZeroMin"
-            android:textColor="#000000"
-            android:paddingTop="5dp"
-            tools:ignore="ButtonStyle" />
+            android:paddingTop="15dp"
+            android:paddingBottom="10dp"
+            style="@style/Button" />
     </LinearLayout>
 
 
@@ -154,8 +151,9 @@
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/list2"
         android:layout_alignParentEnd="true"
-        style="@style/FAB"
+
         app:srcCompat="@drawable/navigation_white"
+        style="@style/FAB"
         android:layout_margin="10dp"
         android:elevation="2dp"/>
 
