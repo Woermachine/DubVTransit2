@@ -1,13 +1,11 @@
 package com.stephenwoerner.dubvtransittwo
 
 import android.Manifest
-import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.location.Criteria
 import android.location.Location
 import android.location.LocationListener
