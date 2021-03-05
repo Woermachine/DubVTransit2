@@ -1,11 +1,13 @@
 package com.stephenwoerner.dubvtransittwo
 
 import android.Manifest
+import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import android.content.Context
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.location.Criteria
 import android.location.Location
 import android.location.LocationListener
@@ -30,6 +32,7 @@ import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import kotlinx.android.synthetic.main.fragment_map.*
 import kotlinx.coroutines.CoroutineScope
@@ -241,7 +244,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             Pair(LocationListFragment.requestKeyArgKey, requestKey),
             Pair(LocationListFragment.requestCodeArgKey, requestCode)
         )
-        if(v.id == R.id.destBtn)
+        if (v.id == R.id.destBtn)
             bundle.putBoolean(LocationListFragment.allowCurrLocation, false)
 
         navController.navigate(R.id.action_mapFragment_to_pickLocationExpandable, bundle)
@@ -372,6 +375,18 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
      * we just move the camera to Sydney and add a marker in Sydney.
      */
     override fun onMapReady(googleMap: GoogleMap) {
+        if (AppUtils.isDarkTheme(requireActivity())) {
+            val success = googleMap.setMapStyle(
+                MapStyleOptions.loadRawResourceStyle(
+                    requireActivity(),
+                    R.raw.style_json
+                )
+            )
+            if (!success) {
+                Timber.e("Style parsing failed.")
+            }
+        }
+
         mMap = googleMap
 
         mMap.uiSettings.isMapToolbarEnabled = false
