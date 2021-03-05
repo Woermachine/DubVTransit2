@@ -16,7 +16,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -32,7 +36,8 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import kotlinx.android.synthetic.main.fragment_map.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.stephenwoerner.dubvtransittwo.shared.Greeting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -116,11 +121,33 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    lateinit var destBtn: Button
+    lateinit var locationBtn: Button
+    lateinit var timeBtn: Button
+    lateinit var dateBtn: Button
+    lateinit var refreshBtn: AppCompatImageView
+    lateinit var continueBtn: FloatingActionButton
+    lateinit var courseBtn: FloatingActionButton
+    lateinit var useCurrentTimeCB: CheckBox
+    lateinit var prtBadge: RelativeLayout
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Timber.d("Hello from shared module: %s", Greeting().greeting())
+
         navController = Navigation.findNavController(view)
         parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
+
+        destBtn = view.findViewById(R.id.destBtn)
+        locationBtn = view.findViewById(R.id.locationBtn)
+        timeBtn = view.findViewById(R.id.timeBtn)
+        dateBtn = view.findViewById(R.id.dateBtn)
+        prtBadge = view.findViewById(R.id.prt_badge)
+        refreshBtn = view.findViewById(R.id.refreshBtn)
+        continueBtn = view.findViewById(R.id.continueBtn)
+        courseBtn = view.findViewById(R.id.courseBtn)
+        useCurrentTimeCB = view.findViewById(R.id.useCurrentTimeCB)
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -156,7 +183,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             }
         }
 
-        prt_badge.setOnClickListener {
+        prtBadge.setOnClickListener {
             val rotateAnimation = RotateAnimation(
                 0F,
                 359F,
@@ -183,7 +210,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 }
             }
         }
-        prt_badge.setOnLongClickListener {
+        prtBadge.setOnLongClickListener {
             showPRTDialog()
             true
         }
@@ -361,10 +388,10 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     private fun prtButtonColor() {
         Timber.d("updating a prt status color")
         if (model.status == "1")
-            prt_badge.background =
+            prtBadge.background =
                 ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_green)
         else
-            prt_badge.background =
+            prtBadge.background =
                 ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_red)
     }
 

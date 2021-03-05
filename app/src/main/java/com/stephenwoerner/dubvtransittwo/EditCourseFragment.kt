@@ -4,13 +4,15 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.fragment_edit_course.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import timber.log.Timber
 
 /**
@@ -37,8 +39,18 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         return inflater.inflate(R.layout.fragment_edit_course, container, false)
     }
 
+    lateinit var done_button: FloatingActionButton
+    lateinit var locationBtn: AppCompatButton
+    lateinit var editable_course_title: EditText
+    lateinit var course_note: EditText
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        done_button = view.findViewById(R.id.done_button)
+        locationBtn = view.findViewById(R.id.locationBtn)
+        editable_course_title = view.findViewById(R.id.editable_course_title)
+        course_note = view.findViewById(R.id.course_note)
 
         navController = Navigation.findNavController(view)
         var isNew = true

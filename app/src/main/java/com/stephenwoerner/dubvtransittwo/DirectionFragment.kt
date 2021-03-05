@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -25,8 +26,8 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.maps.model.LatLng
-import kotlinx.android.synthetic.main.fragment_directions.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -127,8 +128,30 @@ class DirectionFragment : Fragment(), LocationListener {
         return inflater.inflate(R.layout.fragment_directions, container, false)
     }
 
+    lateinit var walkButton: AppCompatButton
+    lateinit var busButton: AppCompatButton
+    lateinit var prtButton: AppCompatButton
+    lateinit var carButton: AppCompatButton
+    lateinit var start_location: TextView
+    lateinit var destination_location: TextView
+    lateinit var navigationButton: FloatingActionButton
+    lateinit var progress: RelativeLayout
+    lateinit var list2: RecyclerView
+    lateinit var prtBadge: TextView
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        walkButton = view.findViewById(R.id.walkButton)
+        busButton = view.findViewById(R.id.busButton)
+        prtButton = view.findViewById(R.id.prtButton)
+        carButton = view.findViewById(R.id.carButton)
+        start_location = view.findViewById(R.id.start_location)
+        destination_location = view.findViewById(R.id.destination_location)
+        navigationButton = view.findViewById(R.id.navigationButton)
+        progress = view.findViewById(R.id.progress)
+        list2 = view.findViewById(R.id.list2)
+        prtBadge = view.findViewById(R.id.prtBadge)
 
         navController = Navigation.findNavController(view)
 
