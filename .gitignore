@@ -11,3 +11,5 @@ gradle/wrapper/gradle-wrapper.jar
 
 local.properties
 /app/release/app-release.aab
+
+shared/build

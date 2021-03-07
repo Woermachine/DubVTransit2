@@ -17,6 +17,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -112,6 +114,7 @@ class DirectionFragment : Fragment(), LocationListener {
                         lon
                     ) > hundredMilesInKM
                 ) {
+                    Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
                     navController.navigateUp()
                 }
 
@@ -200,7 +203,7 @@ class DirectionFragment : Fragment(), LocationListener {
                 .show()
         }
 
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.Main).launch {
             model.requestPRTStatus()
             val results = mapsDataClient.execute(
                 leavingTimeMillis,
@@ -208,8 +211,10 @@ class DirectionFragment : Fragment(), LocationListener {
                 destination
             )
 
-            requireActivity().runOnUiThread {
-                onResults(results)
+            if(isAdded) {
+                CoroutineScope(Dispatchers.Main).launch {
+                    onResults(results)
+                }
             }
         }
     }
