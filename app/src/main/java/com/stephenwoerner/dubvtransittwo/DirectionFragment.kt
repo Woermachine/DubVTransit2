@@ -28,7 +28,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -108,8 +108,8 @@ class DirectionFragment : Fragment(), LocationListener {
                 val hundredMilesInKM = 160.934
 
                 if (getDistanceFromLatLonInKm(
-                        morgantown.lat,
-                        morgantown.lng,
+                        morgantown.longitude,
+                        morgantown.latitude,
                         lat,
                         lon
                     ) > hundredMilesInKM
@@ -360,7 +360,7 @@ class DirectionFragment : Fragment(), LocationListener {
      */
     private fun openMaps(strDest: Int) {
         val uriString = when(strDest) {
-            R.string.nearest_dest -> "http://maps.google.com/maps?q=loc:" + destination.lat + "," + destination.lng + " (" + destinationStr + ")"
+            R.string.nearest_dest -> "http://maps.google.com/maps?q=loc:" + destination.latitude + "," + destination.longitude + " (" + destinationStr + ")"
             else -> {
                 val prt = model.allHashMap[closestPRTA]
                 if (prt != null) {
@@ -440,19 +440,19 @@ class DirectionFragment : Fragment(), LocationListener {
         override fun onBindViewHolder(holder: DirectionsViewHolder, position: Int) {
             holder.textView.text = dataList[position].direction
 
-            dataList[position].stepDistance?.let {
+            val dist = dataList[position].stepDistance//?.let {
                 holder.distance.visibility = View.VISIBLE
-                holder.distance.text = it.toString()
-            } ?: run {
-                holder.distance.visibility = View.GONE
-            }
+                holder.distance.text = dist.toString()
+//            } ?: run {
+//                holder.distance.visibility = View.GONE
+//            }
 
-            dataList[position].stepDuration?.let {
+            val dur = dataList[position].stepDuration//?.let {
                 holder.duration.visibility = View.VISIBLE
-                holder.duration.text = it.toString()
-            } ?: run {
-                holder.duration.visibility = View.GONE
-            }
+                holder.duration.text = dur.toString()
+//            } ?: run {
+//                holder.duration.visibility = View.GONE
+//            }
         }
 
         override fun getItemCount(): Int {

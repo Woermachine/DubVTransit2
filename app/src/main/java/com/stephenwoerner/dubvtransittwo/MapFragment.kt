@@ -47,7 +47,6 @@ import java.util.*
 import kotlin.math.*
 
 
-val TAG: String = MapFragment::class.java.simpleName
 
 /**
  * Allows user to specify an origin, destination, and departure
@@ -56,6 +55,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     FragmentResultListener {
 
     companion object {
+        val TAG: String = MapFragment::class.java.simpleName
         val requestKey = "key_$TAG"
     }
 
@@ -73,21 +73,24 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     lateinit var navController: NavController
     private val viewModel: MyViewModel by activityViewModels()
 
-    private val location: com.google.maps.model.LatLng
+    private val location: LatLng
         get() {
-            var currentLocation = com.google.maps.model.LatLng(0.0, 0.0)
-            locationManager =
-                requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            var currentLocation = LatLng(0.0, 0.0)
+
+            locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    1
-                )
+//                ActivityCompat.requestPermissions(
+//                    requireActivity(),
+//                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+//                    1
+//                )
+                ActivityCompat.requestPermissions(requireActivity(),
+                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION), 1)
             } else {
                 locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
                 val criteria = Criteria()
@@ -108,7 +111,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 val lon = location.longitude
 
                 Timber.d("Location : %s, %s ", lat, lon)
-                currentLocation = com.google.maps.model.LatLng(lat, lon)
+                currentLocation = LatLng(lat, lon)
 
             }
             return currentLocation
@@ -239,11 +242,14 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
         ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1
-            )
+            ActivityCompat.requestPermissions(requireActivity(),
+                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
+                    Manifest.permission.ACCESS_FINE_LOCATION), 1)
+//            ActivityCompat.requestPermissions(
+//                requireActivity(),
+//                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+//                1
+//            )
         }
         if (useCurrentTimeCB.isChecked) {
             useCurrentTime = true
@@ -371,14 +377,14 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 
         if(locationBtn.text.toString() == getString(R.string.current_location)) {
             // Check distance to Morgantown
-            val morgantown = com.google.maps.model.LatLng(39.634224, -79.954850)
+            val morgantown = LatLng(39.634224, -79.954850)
             val hundredMilesInKM = 160.934
 
             if (getDistanceFromLatLonInKm(
-                    morgantown.lat,
-                    morgantown.lng,
-                    location.lat,
-                    location.lng
+                    morgantown.latitude,
+                    morgantown.longitude,
+                    location.latitude,
+                    location.longitude
                 ) < hundredMilesInKM
             ) {
                 Timber.d("Launching DirectionFragment")
@@ -463,26 +469,26 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         mMap.clear()
         viewModel.destination.observe(viewLifecycleOwner, { item ->
             val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
-            destLoc?.let {
-                val destLatLng = LatLng(it.lat, it.lng)
+//            destLoc?.let {
+                val destLatLng = LatLng(destLoc.lat, destLoc.lng)
                 mMap.addMarker(
                     MarkerOptions()
                         .position(destLatLng)
                         .title(item)
                 )
-            }
+//            }
         })
 
         viewModel.source.observe(viewLifecycleOwner, { item ->
             val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
-            startLoc?.let {
-                val startLatLng = LatLng(it.lat, it.lng)
+//            startLoc?.let {
+                val startLatLng = LatLng(startLoc.lat, startLoc.lng)
                 mMap.addMarker(
                     MarkerOptions()
                         .position(startLatLng)
                         .title(item)
                 )
-            }
+//            }
         })
 
         // Add a marker in Sydney and move the camera

@@ -1,8 +1,10 @@
 package com.stephenwoerner.dubvtransittwo
 
+import com.google.android.gms.maps.model.LatLng
 import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
-import com.google.maps.model.*
+import com.google.maps.model.TransitMode
+import com.google.maps.model.TravelMode
 import com.soywiz.klock.DateTime
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
