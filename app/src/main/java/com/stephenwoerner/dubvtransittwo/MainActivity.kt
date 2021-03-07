@@ -3,6 +3,7 @@ package com.stephenwoerner.dubvtransittwo
 import android.os.Bundle
 import android.view.Window
 import androidx.appcompat.app.AppCompatActivity
+import kotlinx.coroutines.CoroutineScope
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 

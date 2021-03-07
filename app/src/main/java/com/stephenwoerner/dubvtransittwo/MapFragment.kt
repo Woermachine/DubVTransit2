@@ -44,6 +44,7 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.*
 
 
 val TAG: String = MapFragment::class.java.simpleName
@@ -367,8 +368,51 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             putLong("leavingTime", leavingTime.timeInMillis)
             putBoolean("useCurrentTime", useCurrentTime)
         }
-        Timber.d("Launching DirectionFragment")
-        navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
+
+        if(locationBtn.text.toString() == getString(R.string.current_location)) {
+            // Check distance to Morgantown
+            val morgantown = com.google.maps.model.LatLng(39.634224, -79.954850)
+            val hundredMilesInKM = 160.934
+
+            if (getDistanceFromLatLonInKm(
+                    morgantown.lat,
+                    morgantown.lng,
+                    location.lat,
+                    location.lng
+                ) < hundredMilesInKM
+            ) {
+                Timber.d("Launching DirectionFragment")
+                navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
+            } else {
+                Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Timber.d("Launching DirectionFragment")
+            navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
+        }
+    }
+
+
+    private fun getDistanceFromLatLonInKm(
+        lat1: Double,
+        lon1: Double,
+        lat2: Double,
+        lon2: Double
+    ): Double {
+        val r = 6371 // Radius of the earth in km
+        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
+        val dLon = deg2rad(lon2 - lon1)
+        val a =
+            sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
+                dLon / 2
+            )
+
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return r * c // Distance in km
+    }
+
+    private fun deg2rad(deg: Double): Double {
+        return deg * (PI / 180.0)
     }
 
     /**
