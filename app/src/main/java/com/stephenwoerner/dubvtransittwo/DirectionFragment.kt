@@ -22,13 +22,13 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.maps.android.SphericalUtil
 import com.google.maps.model.LatLng
-import kotlinx.android.synthetic.main.fragment_directions.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,7 +65,6 @@ class DirectionFragment : Fragment(), LocationListener {
     private val mapsDataClient = MapsDataClient()
 
     lateinit var navController: NavController
-    private val viewModel: MyViewModel by activityViewModels()
 
     private val location: LatLng
         get() {
@@ -106,14 +105,13 @@ class DirectionFragment : Fragment(), LocationListener {
 
                 val morgantown = LatLng(39.634224, -79.954850)
                 val hundredMilesInKM = 160.934
-
-                if (getDistanceFromLatLonInKm(
-                        morgantown.lat,
-                        morgantown.lng,
-                        lat,
-                        lon
-                    ) > hundredMilesInKM
-                ) {
+                val dist = getDistanceFromLatLonInKm(
+                    morgantown.lng,
+                    morgantown.lat,
+                    lat,
+                    lon
+                )
+                if (dist > hundredMilesInKM) {
                     Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
                     navController.navigateUp()
                 }
@@ -130,8 +128,30 @@ class DirectionFragment : Fragment(), LocationListener {
         return inflater.inflate(R.layout.fragment_directions, container, false)
     }
 
+    lateinit var walkButton: AppCompatButton
+    lateinit var busButton: AppCompatButton
+    lateinit var prtButton: AppCompatButton
+    lateinit var carButton: AppCompatButton
+    lateinit var start_location: TextView
+    lateinit var destination_location: TextView
+    lateinit var navigationButton: FloatingActionButton
+    lateinit var progress: RelativeLayout
+    lateinit var list2: RecyclerView
+    lateinit var prtBadge: TextView
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        walkButton = view.findViewById(R.id.walkButton)
+        busButton = view.findViewById(R.id.busButton)
+        prtButton = view.findViewById(R.id.prtButton)
+        carButton = view.findViewById(R.id.carButton)
+        start_location = view.findViewById(R.id.start_location)
+        destination_location = view.findViewById(R.id.destination_location)
+        navigationButton = view.findViewById(R.id.navigationButton)
+        progress = view.findViewById(R.id.progress)
+        list2 = view.findViewById(R.id.list2)
+        prtBadge = view.findViewById(R.id.prtBadge)
 
         navController = Navigation.findNavController(view)
 
@@ -205,10 +225,12 @@ class DirectionFragment : Fragment(), LocationListener {
 
         CoroutineScope(Dispatchers.Main).launch {
             model.requestPRTStatus()
+            val originLatLng = LatLng(origin.lat, origin.lng)
+            val destLatLng = LatLng(destination.lat, destination.lng)
             val results = mapsDataClient.execute(
                 leavingTimeMillis,
-                origin,
-                destination
+                originLatLng,
+                destLatLng
             )
 
             if(isAdded) {
@@ -390,16 +412,17 @@ class DirectionFragment : Fragment(), LocationListener {
         lat2: Double,
         lon2: Double
     ): Double {
-        val r = 6371 // Radius of the earth in km
-        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
-        val dLon = deg2rad(lon2 - lon1)
-        val a =
-            sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
-                dLon / 2
-            )
-
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return r * c // Distance in km
+        return SphericalUtil.computeDistanceBetween(com.google.android.gms.maps.model.LatLng(lat1,lon1),com.google.android.gms.maps.model.LatLng(lat2, lon2))
+//        val r = 6371 // Radius of the earth in km
+//        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
+//        val dLon = deg2rad(lon2 - lon1)
+//        val a =
+//            sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
+//                dLon / 2
+//            )
+//
+//        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+//        return r * c // Distance in km
     }
 
     private fun deg2rad(deg: Double): Double {
@@ -418,19 +441,19 @@ class DirectionFragment : Fragment(), LocationListener {
         override fun onBindViewHolder(holder: DirectionsViewHolder, position: Int) {
             holder.textView.text = dataList[position].direction
 
-            dataList[position].stepDistance?.let {
+            val dist = dataList[position].stepDistance//?.let {
                 holder.distance.visibility = View.VISIBLE
-                holder.distance.text = it.toString()
-            } ?: run {
-                holder.distance.visibility = View.GONE
-            }
+                holder.distance.text = dist.toString()
+//            } ?: run {
+//                holder.distance.visibility = View.GONE
+//            }
 
-            dataList[position].stepDuration?.let {
+            val dur = dataList[position].stepDuration//?.let {
                 holder.duration.visibility = View.VISIBLE
-                holder.duration.text = it.toString()
-            } ?: run {
-                holder.duration.visibility = View.GONE
-            }
+                holder.duration.text = dur.toString()
+//            } ?: run {
+//                holder.duration.visibility = View.GONE
+//            }
         }
 
         override fun getItemCount(): Int {

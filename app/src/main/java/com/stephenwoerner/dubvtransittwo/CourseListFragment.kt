@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_course_lists.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 /**
  * Created by srwoerner on 8/26/17.
@@ -35,8 +35,14 @@ class CourseListFragment : Fragment(), View.OnClickListener {
         return inflater.inflate(R.layout.fragment_course_lists, container, false)
     }
 
+    lateinit var add_course_button: FloatingActionButton
+    lateinit var course_list: RecyclerView
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        add_course_button = view.findViewById(R.id.add_course_button)
+        course_list = view.findViewById(R.id.course_list)
 
         navController = Navigation.findNavController(view)
 

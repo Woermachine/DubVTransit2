@@ -167,7 +167,7 @@ class PRTModel private constructor() {
         val prtValues = ArrayList(prtHashMap.values)
         for (originPoint in prtValues) {
             val dist =
-                (point!!.lat - originPoint.lat).pow(2.0) + (point.lng - originPoint.lng).pow(2.0)
+                (point!!.lat - originPoint.lng).pow(2.0) + (point.lat - originPoint.lng).pow(2.0)
             if (dist < closestVal) {
                 closestVal = dist
                 closest = originPoint

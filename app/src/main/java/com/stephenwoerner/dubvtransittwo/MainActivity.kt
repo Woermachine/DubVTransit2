@@ -7,6 +7,7 @@ import kotlinx.coroutines.CoroutineScope
 import timber.log.Timber
 import timber.log.Timber.DebugTree
 
+
 /**
  * The main activity
  * Created by Stephen on 3/23/2017.
@@ -20,5 +21,8 @@ class MainActivity : AppCompatActivity() {
         window.requestFeature(Window.FEATURE_ACTION_BAR)
         supportActionBar?.hide()
         setContentView(R.layout.activity_main)
+        if (BuildConfig.DEBUG) {
+            Timber.plant(DebugTree())
+        }
     }
 }

@@ -1,17 +1,23 @@
 package com.stephenwoerner.dubvtransittwo
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
+import android.widget.EditText
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatButton
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.fragment_edit_course.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import timber.log.Timber
+
 
 /**
  * EditCourse allows a user to edit the contents of a Course which is stored as an entry in the database
@@ -37,8 +43,18 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         return inflater.inflate(R.layout.fragment_edit_course, container, false)
     }
 
+    lateinit var done_button: FloatingActionButton
+    lateinit var locationBtn: AppCompatButton
+    lateinit var editable_course_title: EditText
+    lateinit var course_note: EditText
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        done_button = view.findViewById(R.id.done_button)
+        locationBtn = view.findViewById(R.id.locationBtn)
+        editable_course_title = view.findViewById(R.id.editable_course_title)
+        course_note = view.findViewById(R.id.course_note)
 
         navController = Navigation.findNavController(view)
         var isNew = true
@@ -55,6 +71,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         courseDb = CourseDb.get(requireContext().applicationContext)
 
         done_button.setOnClickListener {
+            hideKeyboardFrom(requireContext(), view)
             if(locationBtn.text.toString() == getString(R.string.select_location)) {
                 Toast.makeText(context, "Select a location, before saving", Toast.LENGTH_SHORT).show()
             } else {
@@ -114,5 +131,10 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
                 returned = result.getString(LocationListFragment.returnVal)
             }
         }
+    }
+
+    fun hideKeyboardFrom(context: Context, view: View) {
+        val imm: InputMethodManager = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }
