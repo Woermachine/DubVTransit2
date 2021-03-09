@@ -1,6 +1,6 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.Manifest
+import android.Manifest.permission.*
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -16,7 +16,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.Animation
 import android.view.animation.RotateAnimation
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.RelativeLayout
 import android.widget.Toast
+import androidx.appcompat.widget.AppCompatImageView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -29,19 +33,19 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import kotlinx.android.synthetic.main.fragment_map.*
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.maps.model.LatLng
+import com.stephenwoerner.dubvtransittwo.shared.Greeting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.*
 
-
-val TAG: String = MapFragment::class.java.simpleName
 
 /**
  * Allows user to specify an origin, destination, and departure
@@ -50,6 +54,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     FragmentResultListener {
 
     companion object {
+        val TAG: String = MapFragment::class.java.simpleName
         val requestKey = "key_$TAG"
     }
 
@@ -67,47 +72,6 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     lateinit var navController: NavController
     private val viewModel: MyViewModel by activityViewModels()
 
-    private val location: com.google.maps.model.LatLng
-        get() {
-            var currentLocation = com.google.maps.model.LatLng(0.0, 0.0)
-            locationManager =
-                requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-                ActivityCompat.requestPermissions(
-                    requireActivity(),
-                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    1
-                )
-            } else {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
-                val criteria = Criteria()
-                criteria.accuracy = Criteria.ACCURACY_FINE
-                var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                while (location == null) {
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                    if (location == null) {
-                        try {
-                            Thread.sleep(500)
-                        } catch (e: InterruptedException) {
-                            val mess = e.message
-                            if (mess != null) Timber.d("Thread sleep failed: ${e.message}")
-                        }
-                    }
-                }
-                val lat = location.latitude
-                val lon = location.longitude
-
-                Timber.d("Location : %s, %s ", lat, lon)
-                currentLocation = com.google.maps.model.LatLng(lat, lon)
-
-            }
-            return currentLocation
-        }
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -116,11 +80,33 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         return inflater.inflate(R.layout.fragment_map, container, false)
     }
 
+    lateinit var destBtn: Button
+    lateinit var locationBtn: Button
+    lateinit var timeBtn: Button
+    lateinit var dateBtn: Button
+    lateinit var refreshBtn: AppCompatImageView
+    lateinit var continueBtn: FloatingActionButton
+    lateinit var courseBtn: FloatingActionButton
+    lateinit var useCurrentTimeCB: CheckBox
+    lateinit var prtBadge: RelativeLayout
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        Timber.d("Hello from shared module: %s", Greeting().greeting())
+
         navController = Navigation.findNavController(view)
         parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
+
+        destBtn = view.findViewById(R.id.destBtn)
+        locationBtn = view.findViewById(R.id.locationBtn)
+        timeBtn = view.findViewById(R.id.timeBtn)
+        dateBtn = view.findViewById(R.id.dateBtn)
+        prtBadge = view.findViewById(R.id.prt_badge)
+        refreshBtn = view.findViewById(R.id.refreshBtn)
+        continueBtn = view.findViewById(R.id.continueBtn)
+        courseBtn = view.findViewById(R.id.courseBtn)
+        useCurrentTimeCB = view.findViewById(R.id.useCurrentTimeCB)
 
         val mapFragment = childFragmentManager.findFragmentById(R.id.map) as SupportMapFragment
         mapFragment.getMapAsync(this)
@@ -156,7 +142,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             }
         }
 
-        prt_badge.setOnClickListener {
+        prtBadge.setOnClickListener {
             val rotateAnimation = RotateAnimation(
                 0F,
                 359F,
@@ -183,7 +169,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 }
             }
         }
-        prt_badge.setOnLongClickListener {
+        prtBadge.setOnLongClickListener {
             showPRTDialog()
             true
         }
@@ -206,16 +192,8 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         timeBtn.setOnClickListener {
             showTimePickerDialog()
         }
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1
-            )
+        if (!hasPermissions()) {
+            requestPermissions()
         }
         if (useCurrentTimeCB.isChecked) {
             useCurrentTime = true
@@ -340,8 +318,52 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             putLong("leavingTime", leavingTime.timeInMillis)
             putBoolean("useCurrentTime", useCurrentTime)
         }
-        Timber.d("Launching DirectionFragment")
-        navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
+
+        if (locationBtn.text.toString() == getString(R.string.current_location)) {
+            // Check distance to Morgantown
+            val morgantown = LatLng(39.634224, -79.954850)
+            val hundredMilesInKM = 160934
+            val location = getLocation()
+
+            if (getDistanceFromLatLonInMeters(
+                    morgantown.lat,
+                    morgantown.lng,
+                    location.lat,
+                    location.lng
+                ) < hundredMilesInKM
+            ) {
+                Timber.d("Launching DirectionFragment")
+                navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
+            } else {
+                Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Timber.d("Launching DirectionFragment")
+            navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
+        }
+    }
+
+
+    private fun getDistanceFromLatLonInMeters(
+        lat1: Double,
+        lon1: Double,
+        lat2: Double,
+        lon2: Double
+    ): Double {
+        val r = 6371 // Radius of the earth in km
+        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
+        val dLon = deg2rad(lon2 - lon1)
+        val a =
+            sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
+                dLon / 2
+            )
+
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        return r * c // Distance in km
+    }
+
+    private fun deg2rad(deg: Double): Double {
+        return deg * (PI / 180.0)
     }
 
     /**
@@ -361,10 +383,10 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     private fun prtButtonColor() {
         Timber.d("updating a prt status color")
         if (model.status == "1")
-            prt_badge.background =
+            prtBadge.background =
                 ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_green)
         else
-            prt_badge.background =
+            prtBadge.background =
                 ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_red)
     }
 
@@ -391,26 +413,33 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 
         mMap.clear()
         viewModel.destination.observe(viewLifecycleOwner, { item ->
-            val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
-            destLoc?.let {
-                val destLatLng = LatLng(it.lat, it.lng)
-                mMap.addMarker(
-                    MarkerOptions()
-                        .position(destLatLng)
-                        .title(item)
-                )
+            if(hasPermissions()) {
+                val location = getLocation()
+                val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
+                destLoc?.let {
+                    val destLatLng = com.google.android.gms.maps.model.LatLng(it.lat, it.lng)
+                    mMap.addMarker(
+                        MarkerOptions()
+                            .position(destLatLng)
+                            .title(item)
+                    )
+                }
             }
         })
 
         viewModel.source.observe(viewLifecycleOwner, { item ->
-            val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
-            startLoc?.let {
-                val startLatLng = LatLng(it.lat, it.lng)
-                mMap.addMarker(
-                    MarkerOptions()
-                        .position(startLatLng)
-                        .title(item)
-                )
+            if(hasPermissions()) {
+                val location = getLocation()
+                val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
+                startLoc?.let {
+                    val startLatLng =
+                        com.google.android.gms.maps.model.LatLng(startLoc.lat, startLoc.lng)
+                    mMap.addMarker(
+                        MarkerOptions()
+                            .position(startLatLng)
+                            .title(item)
+                    )
+                }
             }
         })
 
@@ -418,9 +447,9 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         val morgantown = LatLng(39.634224, -79.954850)
         mMap.animateCamera(
             CameraUpdateFactory.newLatLngZoom(
-                LatLng(
-                    morgantown.latitude,
-                    morgantown.longitude
+                com.google.android.gms.maps.model.LatLng(
+                    morgantown.lat,
+                    morgantown.lng
                 ), 13.0f
             )
         )
@@ -440,5 +469,74 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         when (v!!.id) {
             courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
         }
+    }
+
+    private fun hasPermissions(): Boolean {
+        var hasPerm = ContextCompat.checkSelfPermission(
+            requireContext(),
+            ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+//            hasPerm = hasPerm && ContextCompat.checkSelfPermission(
+//                requireContext(),
+//                ACCESS_BACKGROUND_LOCATION
+//            ) == PackageManager.PERMISSION_GRANTED
+//        }
+        return hasPerm
+    }
+
+    private fun requestPermissions() {
+//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+//            ActivityCompat.requestPermissions(
+//                requireActivity(),
+//                arrayOf(
+//                    ACCESS_FINE_LOCATION
+//                ), 1
+//            )
+//        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(ACCESS_FINE_LOCATION), 1
+            )
+//        }
+    }
+
+    fun getLocation(): LatLng {
+        var currentLocation = LatLng(0.0, 0.0)
+
+
+        val hasPerm = ContextCompat.checkSelfPermission(
+            requireContext(),
+            ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasPermissions()) {
+            requestPermissions()
+        } else {
+            locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
+            val criteria = Criteria()
+            criteria.accuracy = Criteria.ACCURACY_FINE
+            var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            while (location == null) {
+                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                if (location == null) {
+                    try {
+                        Thread.sleep(500)
+                    } catch (e: InterruptedException) {
+                        val mess = e.message
+                        if (mess != null) Timber.d("Thread sleep failed: ${e.message}")
+                    }
+                }
+            }
+            val lat = location.latitude
+            val lon = location.longitude
+
+            Timber.d("Location : %s, %s ", lat, lon)
+            currentLocation = LatLng(lat, lon)
+
+        }
+        return currentLocation
     }
 }
