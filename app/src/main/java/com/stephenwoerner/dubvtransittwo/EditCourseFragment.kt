@@ -1,9 +1,12 @@
 package com.stephenwoerner.dubvtransittwo
 
+import android.app.Activity
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.widget.AppCompatButton
@@ -14,6 +17,7 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import timber.log.Timber
+
 
 /**
  * EditCourse allows a user to edit the contents of a Course which is stored as an entry in the database
@@ -67,6 +71,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         courseDb = CourseDb.get(requireContext().applicationContext)
 
         done_button.setOnClickListener {
+            hideKeyboardFrom(requireContext(), view)
             if(locationBtn.text.toString() == getString(R.string.select_location)) {
                 Toast.makeText(context, "Select a location, before saving", Toast.LENGTH_SHORT).show()
             } else {
@@ -126,5 +131,10 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
                 returned = result.getString(LocationListFragment.returnVal)
             }
         }
+    }
+
+    fun hideKeyboardFrom(context: Context, view: View) {
+        val imm: InputMethodManager = context.getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
+        imm.hideSoftInputFromWindow(view.windowToken, 0)
     }
 }

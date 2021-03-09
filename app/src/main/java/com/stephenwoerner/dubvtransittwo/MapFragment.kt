@@ -1,6 +1,6 @@
 package com.stephenwoerner.dubvtransittwo
 
-import android.Manifest
+import android.Manifest.permission.*
 import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -33,10 +33,10 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.maps.model.LatLng
 import com.stephenwoerner.dubvtransittwo.shared.Greeting
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -45,7 +45,6 @@ import timber.log.Timber
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.*
-
 
 
 /**
@@ -72,50 +71,6 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 
     lateinit var navController: NavController
     private val viewModel: MyViewModel by activityViewModels()
-
-    private val location: LatLng
-        get() {
-            var currentLocation = LatLng(0.0, 0.0)
-
-            locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
-            if (ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
-                ) != PackageManager.PERMISSION_GRANTED
-            ) {
-//                ActivityCompat.requestPermissions(
-//                    requireActivity(),
-//                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-//                    1
-//                )
-                ActivityCompat.requestPermissions(requireActivity(),
-                    arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
-                        Manifest.permission.ACCESS_FINE_LOCATION), 1)
-            } else {
-                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
-                val criteria = Criteria()
-                criteria.accuracy = Criteria.ACCURACY_FINE
-                var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                while (location == null) {
-                    location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-                    if (location == null) {
-                        try {
-                            Thread.sleep(500)
-                        } catch (e: InterruptedException) {
-                            val mess = e.message
-                            if (mess != null) Timber.d("Thread sleep failed: ${e.message}")
-                        }
-                    }
-                }
-                val lat = location.latitude
-                val lon = location.longitude
-
-                Timber.d("Location : %s, %s ", lat, lon)
-                currentLocation = LatLng(lat, lon)
-
-            }
-            return currentLocation
-        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -237,19 +192,8 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         timeBtn.setOnClickListener {
             showTimePickerDialog()
         }
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION,
-                    Manifest.permission.ACCESS_FINE_LOCATION), 1)
-//            ActivityCompat.requestPermissions(
-//                requireActivity(),
-//                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-//                1
-//            )
+        if (!hasPermissions()) {
+            requestPermissions()
         }
         if (useCurrentTimeCB.isChecked) {
             useCurrentTime = true
@@ -375,16 +319,17 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             putBoolean("useCurrentTime", useCurrentTime)
         }
 
-        if(locationBtn.text.toString() == getString(R.string.current_location)) {
+        if (locationBtn.text.toString() == getString(R.string.current_location)) {
             // Check distance to Morgantown
             val morgantown = LatLng(39.634224, -79.954850)
-            val hundredMilesInKM = 160.934
+            val hundredMilesInKM = 160934
+            val location = getLocation()
 
-            if (getDistanceFromLatLonInKm(
-                    morgantown.latitude,
-                    morgantown.longitude,
-                    location.latitude,
-                    location.longitude
+            if (getDistanceFromLatLonInMeters(
+                    morgantown.lat,
+                    morgantown.lng,
+                    location.lat,
+                    location.lng
                 ) < hundredMilesInKM
             ) {
                 Timber.d("Launching DirectionFragment")
@@ -399,7 +344,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     }
 
 
-    private fun getDistanceFromLatLonInKm(
+    private fun getDistanceFromLatLonInMeters(
         lat1: Double,
         lon1: Double,
         lat2: Double,
@@ -468,36 +413,43 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 
         mMap.clear()
         viewModel.destination.observe(viewLifecycleOwner, { item ->
-            val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
-//            destLoc?.let {
-                val destLatLng = LatLng(destLoc.lat, destLoc.lng)
-                mMap.addMarker(
-                    MarkerOptions()
-                        .position(destLatLng)
-                        .title(item)
-                )
-//            }
+            if(hasPermissions()) {
+                val location = getLocation()
+                val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
+                destLoc?.let {
+                    val destLatLng = com.google.android.gms.maps.model.LatLng(it.lat, it.lng)
+                    mMap.addMarker(
+                        MarkerOptions()
+                            .position(destLatLng)
+                            .title(item)
+                    )
+                }
+            }
         })
 
         viewModel.source.observe(viewLifecycleOwner, { item ->
-            val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
-//            startLoc?.let {
-                val startLatLng = LatLng(startLoc.lat, startLoc.lng)
-                mMap.addMarker(
-                    MarkerOptions()
-                        .position(startLatLng)
-                        .title(item)
-                )
-//            }
+            if(hasPermissions()) {
+                val location = getLocation()
+                val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
+                startLoc?.let {
+                    val startLatLng =
+                        com.google.android.gms.maps.model.LatLng(startLoc.lat, startLoc.lng)
+                    mMap.addMarker(
+                        MarkerOptions()
+                            .position(startLatLng)
+                            .title(item)
+                    )
+                }
+            }
         })
 
         // Add a marker in Sydney and move the camera
         val morgantown = LatLng(39.634224, -79.954850)
         mMap.animateCamera(
             CameraUpdateFactory.newLatLngZoom(
-                LatLng(
-                    morgantown.latitude,
-                    morgantown.longitude
+                com.google.android.gms.maps.model.LatLng(
+                    morgantown.lat,
+                    morgantown.lng
                 ), 13.0f
             )
         )
@@ -517,5 +469,74 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         when (v!!.id) {
             courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
         }
+    }
+
+    private fun hasPermissions(): Boolean {
+        var hasPerm = ContextCompat.checkSelfPermission(
+            requireContext(),
+            ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+//            hasPerm = hasPerm && ContextCompat.checkSelfPermission(
+//                requireContext(),
+//                ACCESS_BACKGROUND_LOCATION
+//            ) == PackageManager.PERMISSION_GRANTED
+//        }
+        return hasPerm
+    }
+
+    private fun requestPermissions() {
+//        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.Q) {
+//            ActivityCompat.requestPermissions(
+//                requireActivity(),
+//                arrayOf(
+//                    ACCESS_FINE_LOCATION
+//                ), 1
+//            )
+//        } else {
+            ActivityCompat.requestPermissions(
+                requireActivity(),
+                arrayOf(ACCESS_FINE_LOCATION), 1
+            )
+//        }
+    }
+
+    fun getLocation(): LatLng {
+        var currentLocation = LatLng(0.0, 0.0)
+
+
+        val hasPerm = ContextCompat.checkSelfPermission(
+            requireContext(),
+            ACCESS_FINE_LOCATION
+        ) == PackageManager.PERMISSION_GRANTED
+
+        if (!hasPermissions()) {
+            requestPermissions()
+        } else {
+            locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as LocationManager
+            locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0f, this)
+            val criteria = Criteria()
+            criteria.accuracy = Criteria.ACCURACY_FINE
+            var location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+            while (location == null) {
+                location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
+                if (location == null) {
+                    try {
+                        Thread.sleep(500)
+                    } catch (e: InterruptedException) {
+                        val mess = e.message
+                        if (mess != null) Timber.d("Thread sleep failed: ${e.message}")
+                    }
+                }
+            }
+            val lat = location.latitude
+            val lon = location.longitude
+
+            Timber.d("Location : %s, %s ", lat, lon)
+            currentLocation = LatLng(lat, lon)
+
+        }
+        return currentLocation
     }
 }

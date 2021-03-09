@@ -22,13 +22,13 @@ import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.SphericalUtil
+import com.google.maps.model.LatLng
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,7 +65,6 @@ class DirectionFragment : Fragment(), LocationListener {
     private val mapsDataClient = MapsDataClient()
 
     lateinit var navController: NavController
-    private val viewModel: MyViewModel by activityViewModels()
 
     private val location: LatLng
         get() {
@@ -106,14 +105,13 @@ class DirectionFragment : Fragment(), LocationListener {
 
                 val morgantown = LatLng(39.634224, -79.954850)
                 val hundredMilesInKM = 160.934
-
-                if (getDistanceFromLatLonInKm(
-                        morgantown.longitude,
-                        morgantown.latitude,
-                        lat,
-                        lon
-                    ) > hundredMilesInKM
-                ) {
+                val dist = getDistanceFromLatLonInKm(
+                    morgantown.lng,
+                    morgantown.lat,
+                    lat,
+                    lon
+                )
+                if (dist > hundredMilesInKM) {
                     Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
                     navController.navigateUp()
                 }
@@ -227,10 +225,12 @@ class DirectionFragment : Fragment(), LocationListener {
 
         CoroutineScope(Dispatchers.Main).launch {
             model.requestPRTStatus()
+            val originLatLng = LatLng(origin.lat, origin.lng)
+            val destLatLng = LatLng(destination.lat, destination.lng)
             val results = mapsDataClient.execute(
                 leavingTimeMillis,
-                origin,
-                destination
+                originLatLng,
+                destLatLng
             )
 
             if(isAdded) {
@@ -360,7 +360,7 @@ class DirectionFragment : Fragment(), LocationListener {
      */
     private fun openMaps(strDest: Int) {
         val uriString = when(strDest) {
-            R.string.nearest_dest -> "http://maps.google.com/maps?q=loc:" + destination.latitude + "," + destination.longitude + " (" + destinationStr + ")"
+            R.string.nearest_dest -> "http://maps.google.com/maps?q=loc:" + destination.lat + "," + destination.lng + " (" + destinationStr + ")"
             else -> {
                 val prt = model.allHashMap[closestPRTA]
                 if (prt != null) {
@@ -412,16 +412,17 @@ class DirectionFragment : Fragment(), LocationListener {
         lat2: Double,
         lon2: Double
     ): Double {
-        val r = 6371 // Radius of the earth in km
-        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
-        val dLon = deg2rad(lon2 - lon1)
-        val a =
-            sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
-                dLon / 2
-            )
-
-        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-        return r * c // Distance in km
+        return SphericalUtil.computeDistanceBetween(com.google.android.gms.maps.model.LatLng(lat1,lon1),com.google.android.gms.maps.model.LatLng(lat2, lon2))
+//        val r = 6371 // Radius of the earth in km
+//        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
+//        val dLon = deg2rad(lon2 - lon1)
+//        val a =
+//            sin(dLat / 2) * sin(dLat / 2) + cos(deg2rad(lat1)) * cos(deg2rad(lat2)) * sin(dLon / 2) * sin(
+//                dLon / 2
+//            )
+//
+//        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+//        return r * c // Distance in km
     }
 
     private fun deg2rad(deg: Double): Double {
