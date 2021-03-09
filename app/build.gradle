@@ -4,7 +4,7 @@ apply plugin: 'kotlin-kapt'
 apply plugin: 'com.squareup.sqldelight'
 apply plugin: 'com.google.gms.google-services'
 // Apply the Performance Monitoring plugin
-//apply plugin: 'com.google.firebase.firebase-perf'
+apply plugin: 'com.google.firebase.firebase-perf'
 
 def apiKeyPropertiesFile = rootProject.file("apikey.properties")
 def apiKeyProperties = new Properties()
@@ -22,8 +22,8 @@ android {
         applicationId "com.stephenwoerner.dubvtransittwo"
         minSdkVersion 26
         targetSdkVersion 30
-        versionCode 6
-        versionName "2.0.6"
+        versionCode 7
+        versionName "2.0.7"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "MAPS_KEY", apiKeyProperties['MAPS_KEY'])
         resValue "string", "maps_api_key", (apiKeyProperties.getProperty("MAPS_KEY") ?: "")
@@ -122,13 +122,13 @@ dependencies {
     // FIREBASE
 
     // Import the Firebase BoM
-//    implementation platform('com.google.firebase:firebase-bom:26.6.0')
-//        // Declare the dependency for the Firebase SDK for Google Analytics
-//    implementation 'com.google.firebase:firebase-analytics-ktx'
-//    implementation 'com.google.firebase:firebase-auth-ktx'
-//    implementation 'com.google.firebase:firebase-firestore-ktx'
-//    // Declare the dependency for the Performance Monitoring library
-//    // When using the BoM, you don't specify versions in Firebase library dependencies
-//    implementation 'com.google.firebase:firebase-perf-ktx'
+    implementation platform('com.google.firebase:firebase-bom:26.6.0')
+        // Declare the dependency for the Firebase SDK for Google Analytics
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-auth-ktx'
+    implementation 'com.google.firebase:firebase-firestore-ktx'
+    // Declare the dependency for the Performance Monitoring library
+    // When using the BoM, you don't specify versions in Firebase library dependencies
+    implementation 'com.google.firebase:firebase-perf-ktx'
 
 }
