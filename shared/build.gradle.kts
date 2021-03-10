@@ -4,6 +4,13 @@ plugins {
     kotlin("multiplatform")
     id("com.android.library")
     kotlin("plugin.serialization") version "1.4.30"
+    id("com.squareup.sqldelight")
+}
+
+sqldelight {
+    database("AppDatabase") {
+        packageName = "com.stephenwoerner.dubvtransittwo"
+    }
 }
 
 kotlin {
@@ -26,9 +33,11 @@ kotlin {
 //        implementation("io.ktor:ktor-client-gson:1.5.2")
         implementation("io.ktor:ktor-client-serialization:1.5.2")
         implementation("com.soywiz.korlibs.klock:klock:1.12.0") //https://github.com/korlibs/klock
+        implementation("com.squareup.sqldelight:runtime:1.4.4")
     }
     sourceSets["androidMain"].dependencies {
         //dependency to platform part of kotlinx.coroutines will be added automatically
+        implementation("com.squareup.sqldelight:android-driver:1.4.4")
     }
     sourceSets["iosX64Main"].dependencies {
         //SQLDelight will be available only in the iOS source set, but not in Android or common
