@@ -50,8 +50,8 @@
                 style="@style/TextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/change_start"
-                android:text="@string/current_location"/>
+                android:contentDescription="@string/change_start"/>
+<!--                android:text="@string/current_location"/>-->
 
             <TextView
                 style="@style/Text"
@@ -65,8 +65,8 @@
                 android:id="@+id/destBtn"
                 style="@style/TextButton"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/destination"/>
+                android:layout_height="wrap_content"/>
+<!--                android:text="@string/destination"/>-->
 
         </GridLayout>
 

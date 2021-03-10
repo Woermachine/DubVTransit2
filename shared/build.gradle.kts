@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
+    kotlin("plugin.serialization") version "1.4.30"
 }
 
 kotlin {
@@ -18,6 +19,20 @@ kotlin {
         val commonMain by getting
         val androidMain by getting
         val iosMain by getting
+    }
+    sourceSets["commonMain"].dependencies {
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2")
+        implementation("io.ktor:ktor-client-core:1.5.2")
+//        implementation("io.ktor:ktor-client-gson:1.5.2")
+        implementation("io.ktor:ktor-client-serialization:1.5.2")
+        implementation("com.soywiz.korlibs.klock:klock:1.12.0") //https://github.com/korlibs/klock
+    }
+    sourceSets["androidMain"].dependencies {
+        //dependency to platform part of kotlinx.coroutines will be added automatically
+    }
+    sourceSets["iosX64Main"].dependencies {
+        //SQLDelight will be available only in the iOS source set, but not in Android or common
+        implementation("com.squareup.sqldelight:native-driver:1.4.1")
     }
 }
 

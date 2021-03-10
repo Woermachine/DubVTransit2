@@ -29,6 +29,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.maps.android.SphericalUtil
 import com.google.maps.model.LatLng
+import com.stephenwoerner.dubvtransittwo.shared.Strings
+import com.stephenwoerner.dubvtransittwo.shared.PRTModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -192,7 +194,7 @@ class DirectionFragment : Fragment(), LocationListener {
         destination_location.text = displayDestination
 
         origin = when (originStr) {
-            getString(R.string.current_location) -> location
+            Strings.current_location -> location
             else -> {
                 val lookupString = if (model.allHashMap.containsKey(originStr)) {
                     originStr
@@ -201,7 +203,8 @@ class DirectionFragment : Fragment(), LocationListener {
                     val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
                     course.location
                 }
-                model.allHashMap[lookupString]!!
+                val kLatLng = model.allHashMap[lookupString]!!
+                LatLng(kLatLng.lat, kLatLng.lng)
             }
         }
 
@@ -210,7 +213,8 @@ class DirectionFragment : Fragment(), LocationListener {
             val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
             destinationStr = course.location
         }
-        destination = model.allHashMap[destinationStr]!!
+        val kLatLng = model.allHashMap[destinationStr]!!
+        destination = LatLng(kLatLng.lat, kLatLng.lng)
 
         navigationButton.setOnClickListener {
             val dest = if(selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest

@@ -38,6 +38,9 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.maps.model.LatLng
 import com.stephenwoerner.dubvtransittwo.shared.Greeting
+import com.stephenwoerner.dubvtransittwo.shared.KLatLng
+import com.stephenwoerner.dubvtransittwo.shared.PRTModel
+import com.stephenwoerner.dubvtransittwo.shared.Strings
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -319,7 +322,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             putBoolean("useCurrentTime", useCurrentTime)
         }
 
-        if (locationBtn.text.toString() == getString(R.string.current_location)) {
+        if (locationBtn.text.toString() == Strings.current_location) {
             // Check distance to Morgantown
             val morgantown = LatLng(39.634224, -79.954850)
             val hundredMilesInKM = 160934
@@ -415,7 +418,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         viewModel.destination.observe(viewLifecycleOwner, { item ->
             if(hasPermissions()) {
                 val location = getLocation()
-                val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
+                val destLoc = model.findLatLng(item, KLatLng(location.lat, location.lng))
                 destLoc?.let {
                     val destLatLng = com.google.android.gms.maps.model.LatLng(it.lat, it.lng)
                     mMap.addMarker(
@@ -430,7 +433,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         viewModel.source.observe(viewLifecycleOwner, { item ->
             if(hasPermissions()) {
                 val location = getLocation()
-                val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
+                val startLoc = model.findLatLng(item, KLatLng(location.lat, location.lng))
                 startLoc?.let {
                     val startLatLng =
                         com.google.android.gms.maps.model.LatLng(startLoc.lat, startLoc.lng)

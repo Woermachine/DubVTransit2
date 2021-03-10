@@ -4,6 +4,8 @@ import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.model.*
 import com.soywiz.klock.DateTime
+import com.stephenwoerner.dubvtransittwo.shared.KLatLng
+import com.stephenwoerner.dubvtransittwo.shared.PRTModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import timber.log.Timber
@@ -30,11 +32,11 @@ class MapsDataClient {
         if (leavingTime < currTime)
             leavingTime = currTime
 
-        val closestPRTA = model.findClosestPRT(origin)
-        val closestPRTB = model.findClosestPRT(destination)
+        val closestPRTA = model.findClosestPRT(origin.toKLatLng())
+        val closestPRTB = model.findClosestPRT(destination.toKLatLng())
 
-        val closestPRTAStr = model.allHashMap[closestPRTA]
-        val closestPRTBStr = model.allHashMap[closestPRTB]
+        val closestPRTAStr = model.allHashMap[closestPRTA]!!.toLatLng()
+        val closestPRTBStr = model.allHashMap[closestPRTB]!!.toLatLng()
 
         val geoContext = GeoApiContext.Builder().apiKey(BuildConfig.MAPS_KEY).build()
         val instant = Instant.ofEpochSecond(leavingTime)
@@ -185,4 +187,12 @@ class MapsDataClient {
         val closestPRTB: String, val leavingTime: Long
     )
 
+}
+
+private fun LatLng.toKLatLng(): KLatLng {
+    return KLatLng(this.lat, this.lng)
+}
+
+private fun KLatLng.toLatLng(): LatLng {
+    return LatLng(this.lat, this.lng)
 }

@@ -5,7 +5,7 @@
     <!-- Main Activity -->
     <!-- ************* -->
     <string name="origin">Origin</string>
-    <string name="destination">Destination</string>
+<!--    <string name="destination">Destination</string>-->
     <string name="from_main">From</string>
     <string name="to_main">To</string>
     <string name="departure_time">Departure Time</string>
@@ -13,7 +13,7 @@
     <string name="current_day">Current Day</string>
     <string name="prt_status">PRT Status</string>
     <string name="continue_button">Continue</string>
-    <string name="current_location">Current Location</string>
+<!--    <string name="current_location">Current Location</string>-->
     <string name="select_location">Select Location</string>
     <string name="background_desc">Continue Button</string>
 

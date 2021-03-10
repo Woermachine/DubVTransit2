@@ -9,6 +9,7 @@ import android.widget.SimpleExpandableListAdapter
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import com.stephenwoerner.dubvtransittwo.shared.PRTModel
 import timber.log.Timber
 
 /**
