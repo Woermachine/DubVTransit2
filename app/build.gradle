@@ -90,7 +90,7 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-extensions:2.2.0'
 
     implementation "org.jetbrains.kotlin:kotlin-stdlib-common"
-    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.1"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.4.2"
 
     implementation "com.soywiz.korlibs.klock:klock:1.12.0" //https://github.com/korlibs/klock
     implementation "com.jakewharton.timber:timber:4.7.1"
