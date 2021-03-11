@@ -29,6 +29,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.maps.android.SphericalUtil
 import com.google.maps.model.LatLng
+import com.stephenwoerner.dubvtransittwo.shared.CourseDb
 import com.stephenwoerner.dubvtransittwo.shared.Strings
 import com.stephenwoerner.dubvtransittwo.shared.PRTModel
 import kotlinx.coroutines.CoroutineScope
@@ -199,8 +200,8 @@ class DirectionFragment : Fragment(), LocationListener {
                 val lookupString = if (model.allHashMap.containsKey(originStr)) {
                     originStr
                 } else {
-                    val courseDb = CourseDb.get(requireContext().applicationContext)
-                    val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
+                    val courseDb = CourseDb.get()//requireContext().applicationContext)
+                    val course = courseDb.coursesQueries!!.selectCourse(originStr).executeAsOne()
                     course.location
                 }
                 val kLatLng = model.allHashMap[lookupString]!!
@@ -209,8 +210,8 @@ class DirectionFragment : Fragment(), LocationListener {
         }
 
         if (!model.allHashMap.containsKey(destinationStr)) { //If its not in the HashMap then its a user course
-            val courseDb = CourseDb.get(requireContext().applicationContext)
-            val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
+            val courseDb = CourseDb.get()//requireContext().applicationContext)
+            val course = courseDb.coursesQueries!!.selectCourse(destinationStr).executeAsOne()
             destinationStr = course.location
         }
         val kLatLng = model.allHashMap[destinationStr]!!

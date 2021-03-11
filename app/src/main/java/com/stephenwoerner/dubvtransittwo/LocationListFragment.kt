@@ -9,6 +9,7 @@ import android.widget.SimpleExpandableListAdapter
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
+import com.stephenwoerner.dubvtransittwo.shared.CourseDb
 import com.stephenwoerner.dubvtransittwo.shared.PRTModel
 import timber.log.Timber
 
@@ -93,7 +94,7 @@ class LocationListFragment : Fragment() {
         if (useCourses) {
             val courseStrings = ArrayList<String>()
             val courses =
-                CourseDb.get(requireContext().applicationContext).coursesQueries.selectAll()
+                CourseDb.get().coursesQueries!!.selectAll() //requireContext().applicationContext)
                     .executeAsList()
             for (course in courses) {
                 courseStrings.add(course.course)

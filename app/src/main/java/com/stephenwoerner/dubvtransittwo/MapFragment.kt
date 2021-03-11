@@ -475,7 +475,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
     }
 
     private fun hasPermissions(): Boolean {
-        var hasPerm = ContextCompat.checkSelfPermission(
+        val hasPerm = ContextCompat.checkSelfPermission(
             requireContext(),
             ACCESS_FINE_LOCATION
         ) == PackageManager.PERMISSION_GRANTED
@@ -505,7 +505,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 //        }
     }
 
-    fun getLocation(): LatLng {
+    private fun getLocation(): LatLng {
         var currentLocation = LatLng(0.0, 0.0)
 
 

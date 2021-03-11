@@ -298,10 +298,9 @@ class PRTModel private constructor() {
                     name
                 } else {
                     //TODO SQLDelight multiplat
-//                    val courseDb = CourseDb.get(context)
-//                    val course = courseDb.coursesQueries.selectCourse(name).executeAsOne()
-//                    course.location
-                    "temp"
+                    val courseDb = CourseDb.get()
+                    val course = courseDb.coursesQueries!!.selectCourse(name).executeAsOne()
+                    course.location
                 }
                 model.allHashMap[lookupString]!!
             }

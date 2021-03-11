@@ -16,6 +16,7 @@ import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.stephenwoerner.dubvtransittwo.shared.CourseDb
 import timber.log.Timber
 
 
@@ -68,7 +69,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
             childFragmentManager.popBackStack()
         }
 
-        courseDb = CourseDb.get(requireContext().applicationContext)
+        courseDb = CourseDb.get()//requireContext().applicationContext)
 
         done_button.setOnClickListener {
             hideKeyboardFrom(requireContext(), view)
@@ -76,12 +77,12 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
                 Toast.makeText(context, "Select a location, before saving", Toast.LENGTH_SHORT).show()
             } else {
                 if (isNew)
-                    courseDb.coursesQueries.insert(
+                    courseDb.coursesQueries!!.insert(
                         course = editable_course_title.text.toString(),
                         location = locationBtn.text.toString(), note = course_note.text.toString()
                     )
                 else
-                    courseDb.coursesQueries.update(
+                    courseDb.coursesQueries!!.update(
                         course = editable_course_title.text.toString(),
                         location = locationBtn.text.toString(), note = course_note.text.toString(),
                         _id = rowId,
@@ -101,7 +102,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
     }
 
     private fun fillData() {
-        val course = courseDb.coursesQueries.selectCourse(title).executeAsOneOrNull()
+        val course = courseDb.coursesQueries!!.selectCourse(title).executeAsOneOrNull()
         if (course != null) {
             rowId = course._id
             editable_course_title.setText(course.course)

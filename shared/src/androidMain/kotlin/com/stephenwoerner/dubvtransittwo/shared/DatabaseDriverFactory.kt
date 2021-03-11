@@ -3,6 +3,7 @@ package com.stephenwoerner.dubvtransittwo.shared
 import android.content.Context
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
+import com.stephenwoerner.dubvtransittwo.AppDatabase
 
 actual class DatabaseDriverFactory(private val context: Context) {
     actual fun createDriver(): SqlDriver {

@@ -14,6 +14,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.stephenwoerner.dubvtransittwo.shared.CourseDb
 
 /**
  * Created by srwoerner on 8/26/17.
@@ -47,7 +48,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
         navController = Navigation.findNavController(view)
 
         add_course_button.setOnClickListener(this)
-        mDb = CourseDb.get(requireContext().applicationContext)
+        mDb = CourseDb.get()//requireContext().applicationContext)
         course_list.layoutManager =
             LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
         fillData()
@@ -59,7 +60,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
     }
 
     private fun fillData() {
-        val courseQuery = mDb.coursesQueries.selectAll().executeAsList()
+        val courseQuery = mDb.coursesQueries!!.selectAll().executeAsList()
         courseArrayList = ArrayList()
         for (c in courseQuery) {
             courseArrayList.add(c)
@@ -83,7 +84,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
             holder.textView.text = dataList[position].course
 
             holder.deleteButton.setOnClickListener {
-                mDb.coursesQueries.deleteByID(dataList[position]._id)
+                mDb.coursesQueries!!.deleteByID(dataList[position]._id)
                 dataList.removeAt(position)  // remove the item from list
                 notifyItemRemoved(position)
                 notifyDataSetChanged()

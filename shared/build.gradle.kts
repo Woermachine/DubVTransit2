@@ -1,11 +1,45 @@
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinNativeTarget
 
+buildscript {
+    repositories {
+        mavenLocal()
+        maven("https://kotlin.bintray.com/kotlinx")
+        maven("https://dl.bintray.com/jetbrains/kotlin-native-dependencies")
+        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        maven("https://plugins.gradle.org/m2/")
+        google()
+        jcenter()
+    }
+
+    dependencies {
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31")
+        classpath("com.android.tools.build:gradle:3.5.0")
+        classpath("co.touchlab:kotlinxcodesync:0.1.5")
+    }
+}
+
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
     kotlin("plugin.serialization") version "1.4.30"
     id("com.squareup.sqldelight")
 }
+
+allprojects {
+    repositories {
+        mavenLocal()
+        google()
+        jcenter()
+        mavenCentral()
+        maven("https://dl.bintray.com/kotlin/kotlin-eap")
+        maven("https://kotlin.bintray.com/ktor")
+        maven("https://kotlin.bintray.com/kotlinx")
+    }
+}
+
+apply(plugin = "maven-publish")
+apply(plugin = "com.android.library")
+apply(plugin = "kotlin-android-extensions")
 
 sqldelight {
     database("AppDatabase") {
@@ -34,21 +68,23 @@ kotlin {
         implementation("io.ktor:ktor-client-serialization:1.5.2")
         implementation("com.soywiz.korlibs.klock:klock:1.12.0") //https://github.com/korlibs/klock
         implementation("com.squareup.sqldelight:runtime:1.4.4")
+        implementation(kotlin("stdlib-common"))
     }
     sourceSets["androidMain"].dependencies {
         //dependency to platform part of kotlinx.coroutines will be added automatically
         implementation("com.squareup.sqldelight:android-driver:1.4.4")
+        implementation(kotlin("stdlib-jdk8"))
     }
     sourceSets["iosX64Main"].dependencies {
         //SQLDelight will be available only in the iOS source set, but not in Android or common
-        implementation("com.squareup.sqldelight:native-driver:1.4.1")
+        implementation("com.squareup.sqldelight:native-driver:1.4.4")
     }
 }
 
 android {
     compileSdkVersion(30)
     defaultConfig {
-        minSdkVersion(24)
+        minSdkVersion(26)
         targetSdkVersion(30)
     }
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
