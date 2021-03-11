@@ -74,6 +74,10 @@ kotlin {
         //dependency to platform part of kotlinx.coroutines will be added automatically
         implementation("com.squareup.sqldelight:android-driver:1.4.4")
         implementation(kotlin("stdlib-jdk8"))
+
+        implementation("com.google.maps:google-maps-services:0.15.0")
+        implementation("com.google.maps.android:maps-ktx:3.0.0")
+        implementation("com.google.maps.android:maps-utils-ktx:3.0.0")
     }
     sourceSets["iosX64Main"].dependencies {
         //SQLDelight will be available only in the iOS source set, but not in Android or common

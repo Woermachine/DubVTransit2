@@ -29,13 +29,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.maps.android.SphericalUtil
 import com.google.maps.model.LatLng
-import com.stephenwoerner.dubvtransittwo.shared.CourseDb
-import com.stephenwoerner.dubvtransittwo.shared.Strings
-import com.stephenwoerner.dubvtransittwo.shared.PRTModel
-import com.stephenwoerner.dubvtransittwo.shared.directions.MapsTaskResults
-import com.stephenwoerner.dubvtransittwo.shared.directions.Route
-import com.stephenwoerner.dubvtransittwo.shared.directions.SimpleDirections
-import com.stephenwoerner.dubvtransittwo.shared.directions.StepsAndDuration
+import com.stephenwoerner.dubvtransittwo.shared.*
+import com.stephenwoerner.dubvtransittwo.shared.directions.*
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -53,8 +48,8 @@ class DirectionFragment : Fragment(), LocationListener {
     private var useCurrentTime: Boolean = false
     private var selected: Int = R.id.carButton
 
-    private lateinit var origin: LatLng
-    private lateinit var destination: LatLng
+    private lateinit var origin: KLatLng
+    private lateinit var destination: KLatLng
 
     private var leavingTime = 0L
 
@@ -68,11 +63,11 @@ class DirectionFragment : Fragment(), LocationListener {
     private var leavingTimeMillis: Long = 0L
     private val model = PRTModel.get()
 
-    private val mapsDataClient = MapsDataClient()
+    private val mapsDataClient = MapsDataClient(BuildConfig.MAPS_KEY)
 
     lateinit var navController: NavController
 
-    private val location: LatLng
+    private val location: KLatLng
         get() {
             var currentLocation = LatLng(0.0, 0.0)
             locationManager =
@@ -123,7 +118,7 @@ class DirectionFragment : Fragment(), LocationListener {
                 }
 
             }
-            return currentLocation
+            return KLatLng(currentLocation.lat, currentLocation.lng)
         }
 
     override fun onCreateView(
@@ -207,8 +202,7 @@ class DirectionFragment : Fragment(), LocationListener {
                     val course = courseDb.coursesQueries!!.selectCourse(originStr).executeAsOne()
                     course.location
                 }
-                val kLatLng = model.allHashMap[lookupString]!!
-                LatLng(kLatLng.lat, kLatLng.lng)
+                model.allHashMap[lookupString]!!
             }
         }
 
@@ -217,8 +211,7 @@ class DirectionFragment : Fragment(), LocationListener {
             val course = courseDb.coursesQueries!!.selectCourse(destinationStr).executeAsOne()
             destinationStr = course.location
         }
-        val kLatLng = model.allHashMap[destinationStr]!!
-        destination = LatLng(kLatLng.lat, kLatLng.lng)
+        destination = model.allHashMap[destinationStr]!!
 
         navigationButton.setOnClickListener {
             val dest =
@@ -234,12 +227,12 @@ class DirectionFragment : Fragment(), LocationListener {
 
         CoroutineScope(Dispatchers.Main).launch {
             model.requestPRTStatus()
-            val originLatLng = LatLng(origin.lat, origin.lng)
-            val destLatLng = LatLng(destination.lat, destination.lng)
+//            val originLatLng = LatLng(origin.lat, origin.lng)
+//            val destLatLng = LatLng(destination.lat, destination.lng)
             val results = mapsDataClient.execute(
                 leavingTimeMillis,
-                originLatLng,
-                destLatLng
+                origin,
+                destination
             )
 
             if (isAdded) {
