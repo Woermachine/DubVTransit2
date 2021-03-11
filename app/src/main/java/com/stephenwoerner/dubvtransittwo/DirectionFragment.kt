@@ -32,6 +32,10 @@ import com.google.maps.model.LatLng
 import com.stephenwoerner.dubvtransittwo.shared.CourseDb
 import com.stephenwoerner.dubvtransittwo.shared.Strings
 import com.stephenwoerner.dubvtransittwo.shared.PRTModel
+import com.stephenwoerner.dubvtransittwo.shared.directions.MapsTaskResults
+import com.stephenwoerner.dubvtransittwo.shared.directions.Route
+import com.stephenwoerner.dubvtransittwo.shared.directions.SimpleDirections
+import com.stephenwoerner.dubvtransittwo.shared.directions.StepsAndDuration
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -42,13 +46,12 @@ import kotlin.math.*
 
 class DirectionFragment : Fragment(), LocationListener {
 
-    enum class Route { CAR, BUS, WALK, PRT }
 
     private lateinit var destinationStr: String
     private lateinit var closestPRTA: String
     private lateinit var closestPRTB: String
     private var useCurrentTime: Boolean = false
-    private var selected : Int = R.id.carButton
+    private var selected: Int = R.id.carButton
 
     private lateinit var origin: LatLng
     private lateinit var destination: LatLng
@@ -218,12 +221,13 @@ class DirectionFragment : Fragment(), LocationListener {
         destination = LatLng(kLatLng.lat, kLatLng.lng)
 
         navigationButton.setOnClickListener {
-            val dest = if(selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest
+            val dest =
+                if (selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest
             AlertDialog.Builder(requireActivity())
                 .setIcon(R.drawable.navigation_black)
                 .setTitle(R.string.alert_title)
                 .setMessage(dest)
-                .setPositiveButton("Open") { _,_ -> openMaps(dest) }
+                .setPositiveButton("Open") { _, _ -> openMaps(dest) }
                 .setCancelable(true)
                 .show()
         }
@@ -238,7 +242,7 @@ class DirectionFragment : Fragment(), LocationListener {
                 destLatLng
             )
 
-            if(isAdded) {
+            if (isAdded) {
                 CoroutineScope(Dispatchers.Main).launch {
                     onResults(results)
                 }
@@ -246,7 +250,7 @@ class DirectionFragment : Fragment(), LocationListener {
         }
     }
 
-    private fun onResults(mapsTaskResults: MapsDataClient.MapsTaskResults) {
+    private fun onResults(mapsTaskResults: MapsTaskResults) {
 
         progress.visibility = View.GONE
 
@@ -265,13 +269,13 @@ class DirectionFragment : Fragment(), LocationListener {
             else -> carDirections
         }
 
-        val btnSelectColor = if(AppUtils.isDarkTheme(requireActivity()))
+        val btnSelectColor = if (AppUtils.isDarkTheme(requireActivity()))
             getMuhDrawable(R.color.colorAccentDark)
         else
             getMuhDrawable(R.color.colorPrimaryDark)
 
 
-        fun getButtonText(stepsAndDur: MapsDataClient.StepsAndDuration): String {
+        fun getButtonText(stepsAndDur: StepsAndDuration): String {
             if (stepsAndDur.isAvailable) {
                 return "${stepsAndDur.duration / 60} min"
             }
@@ -308,7 +312,7 @@ class DirectionFragment : Fragment(), LocationListener {
      * @param v the button which was pressed
      */
     private fun changeSelected(v: View) {
-        val unselected = if(AppUtils.isDarkTheme(requireActivity()))
+        val unselected = if (AppUtils.isDarkTheme(requireActivity()))
             getMuhDrawable(R.color.colorAccent)
         else
             getMuhDrawable(R.color.colorPrimary)
@@ -318,7 +322,7 @@ class DirectionFragment : Fragment(), LocationListener {
         walkButton.background = unselected
         busButton.background = unselected
 
-        val selectedColor = if(AppUtils.isDarkTheme(requireActivity()))
+        val selectedColor = if (AppUtils.isDarkTheme(requireActivity()))
             getMuhDrawable(R.color.colorAccentDark)
         else
             getMuhDrawable(R.color.colorPrimaryDark)
@@ -364,7 +368,7 @@ class DirectionFragment : Fragment(), LocationListener {
      * @param strDest the string int representing prt or destination
      */
     private fun openMaps(strDest: Int) {
-        val uriString = when(strDest) {
+        val uriString = when (strDest) {
             R.string.nearest_dest -> "http://maps.google.com/maps?q=loc:" + destination.lat + "," + destination.lng + " (" + destinationStr + ")"
             else -> {
                 val prt = model.allHashMap[closestPRTA]
@@ -417,7 +421,12 @@ class DirectionFragment : Fragment(), LocationListener {
         lat2: Double,
         lon2: Double
     ): Double {
-        return SphericalUtil.computeDistanceBetween(com.google.android.gms.maps.model.LatLng(lat1,lon1),com.google.android.gms.maps.model.LatLng(lat2, lon2))
+        return SphericalUtil.computeDistanceBetween(
+            com.google.android.gms.maps.model.LatLng(
+                lat1,
+                lon1
+            ), com.google.android.gms.maps.model.LatLng(lat2, lon2)
+        )
 //        val r = 6371 // Radius of the earth in km
 //        val dLat = deg2rad(lat2 - lat1)  // deg2rad below
 //        val dLon = deg2rad(lon2 - lon1)
@@ -434,7 +443,7 @@ class DirectionFragment : Fragment(), LocationListener {
         return deg * (PI / 180.0)
     }
 
-    class DirectionAdapter(private val dataList: ArrayList<MapsDataClient.SimpleDirections>) :
+    class DirectionAdapter(private val dataList: ArrayList<SimpleDirections>) :
         RecyclerView.Adapter<DirectionsViewHolder>() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): DirectionsViewHolder {
@@ -446,19 +455,13 @@ class DirectionFragment : Fragment(), LocationListener {
         override fun onBindViewHolder(holder: DirectionsViewHolder, position: Int) {
             holder.textView.text = dataList[position].direction
 
-            val dist = dataList[position].stepDistance//?.let {
-                holder.distance.visibility = View.VISIBLE
-                holder.distance.text = dist.toString()
-//            } ?: run {
-//                holder.distance.visibility = View.GONE
-//            }
+            holder.distance.visibility = View.VISIBLE
+            val dist = dataList[position].stepDistance
+            holder.distance.text = dist.toString()
 
-            val dur = dataList[position].stepDuration//?.let {
-                holder.duration.visibility = View.VISIBLE
-                holder.duration.text = dur.toString()
-//            } ?: run {
-//                holder.duration.visibility = View.GONE
-//            }
+            holder.duration.visibility = View.VISIBLE
+            val dur = dataList[position].stepDuration
+            holder.duration.text = dur.toString()
         }
 
         override fun getItemCount(): Int {

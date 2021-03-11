@@ -6,6 +6,7 @@ import com.google.maps.model.*
 import com.soywiz.klock.DateTime
 import com.stephenwoerner.dubvtransittwo.shared.KLatLng
 import com.stephenwoerner.dubvtransittwo.shared.PRTModel
+import com.stephenwoerner.dubvtransittwo.shared.directions.*
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import timber.log.Timber
@@ -95,7 +96,7 @@ class MapsDataClient {
                 pSAD = StepsAndDuration(ArrayList(), fullDir, true)
 
                 pSAD.directions.addAll(pSADA.directions)
-                pSAD.directions.add(SimpleDirections(prtDirection, null, prtDuration))
+                pSAD.directions.add(SimpleDirections(prtDirection, null, prtDuration.toKDuration()))
                 pSAD.directions.addAll(pSADB.directions)
             } else {
                 val noPRTAL = arrayListOf<SimpleDirections>()
@@ -120,18 +121,18 @@ class MapsDataClient {
 
 
         var fastest = cSAD.duration
-        var fastestRoute = DirectionFragment.Route.CAR
+        var fastestRoute = Route.CAR
 
         if (bSAD.isAvailable && bSAD.duration < fastest) {
             fastest = bSAD.duration
-            fastestRoute = DirectionFragment.Route.BUS
+            fastestRoute = Route.BUS
         }
         if (wSAD.isAvailable && wSAD.duration < fastest) {
             fastest = wSAD.duration
-            fastestRoute = DirectionFragment.Route.WALK
+            fastestRoute = Route.WALK
         }
         if (pSAD.isAvailable && pSAD.duration < fastest) {
-            fastestRoute = DirectionFragment.Route.PRT
+            fastestRoute = Route.PRT
         }
 
         return MapsTaskResults(
@@ -157,7 +158,7 @@ class MapsDataClient {
         if (isAvailable) {
             dr.routes[0]?.legs?.forEach { leg ->
                 leg.steps?.forEach {
-                    directions.add(SimpleDirections(formatInstruct(it), it.distance, it.duration))
+                    directions.add(SimpleDirections(formatInstruct(it), it.distance.toKDistance(), it.duration.toKDuration()))
                 }
                 duration += leg.duration.inSeconds.toInt()
             }
@@ -168,24 +169,11 @@ class MapsDataClient {
     }
 
 
-    data class SimpleDirections(
-        val direction: String,
-        val stepDistance: Distance?,
-        val stepDuration: Duration?
-    )
 
-    data class StepsAndDuration(
-        val directions: ArrayList<SimpleDirections>,
-        val duration: Int,
-        val isAvailable: Boolean
-    )
 
-    data class MapsTaskResults(
-        val carStepsAndDuration: StepsAndDuration, val busStepsAndDuration: StepsAndDuration,
-        val walkStepsAndDuration: StepsAndDuration, val prtStepsAndDuration: StepsAndDuration,
-        val fastestRoute: DirectionFragment.Route, val closestPRTA: String,
-        val closestPRTB: String, val leavingTime: Long
-    )
+
+
+
 
 }
 
@@ -195,4 +183,12 @@ private fun LatLng.toKLatLng(): KLatLng {
 
 private fun KLatLng.toLatLng(): LatLng {
     return LatLng(this.lat, this.lng)
+}
+
+private fun Duration.toKDuration(): KDuration {
+    return KDuration(this.inSeconds, this.humanReadable)
+}
+
+private fun Distance.toKDistance(): KDistance {
+    return KDistance(this.inMeters, this.humanReadable)
 }
