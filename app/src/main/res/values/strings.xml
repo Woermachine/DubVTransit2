@@ -68,4 +68,22 @@
     <string name="delete_course_desc">delete course</string>
     <string name="open_calendar">open calendar</string>
 
+
+    <!-- ************ -->
+    <!-- MapFragment -->
+    <!-- ************ -->
+    <string name="time_dialog">Time Dialog</string>
+    <string name="date_dialog">Date Dialog</string>
+    <string name="must_specify">Must specify a destination</string>
+    <string name="current_location_invalid">Current Location is not a valid destination</string>
+    <string name="too_far_from_morgantown">Too far from Morgantown</string>
+
+
+    <!-- ************ -->
+    <!-- EditCourseFragment -->
+    <!-- ************ -->
+    <string name="problem_opening_editcourse">Problem opening EditCourse</string>
+    <string name="select_loc_before_saving">Select a location, before saving</string>
+
+
 </resources>

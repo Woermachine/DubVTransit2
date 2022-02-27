@@ -49,7 +49,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
                 title = it.getString("title")!!
             }
         } ?: run {
-            Toast.makeText(activity, "Problem opening EditCourse", Toast.LENGTH_SHORT).show()
+            Toast.makeText(activity, R.string.problem_opening_editcourse, Toast.LENGTH_SHORT).show()
             childFragmentManager.popBackStack()
         }
 
@@ -58,7 +58,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         binding.apply {
             doneButton.setOnClickListener {
                 if (locationBtn.text.toString() == getString(R.string.select_location)) {
-                    Toast.makeText(context, "Select a location, before saving", Toast.LENGTH_SHORT)
+                    Toast.makeText(context, R.string.select_loc_before_saving, Toast.LENGTH_SHORT)
                         .show()
                 } else {
                     if (isNew)

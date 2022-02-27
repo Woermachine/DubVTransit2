@@ -289,7 +289,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             leavingTime[Calendar.MINUTE],
             false
         )
-        timePickerDialog.setTitle("Time Dialog")
+        timePickerDialog.setTitle(R.string.time_dialog)
         Timber.d("showing time picker dialog")
         timePickerDialog.show()
     }
@@ -313,7 +313,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             leavingTime[Calendar.MONTH],
             leavingTime[Calendar.DAY_OF_MONTH]
         )
-        datePickerDialog.setTitle("Date Dialog")
+        datePickerDialog.setTitle(R.string.date_dialog)
         Timber.d("showing date picker")
         datePickerDialog.show()
     }
@@ -325,7 +325,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         binding.apply {
             if (destBtn.text.toString().compareTo("Destination", true) == 0) {
                 Timber.d("Failed to launch, no destination selected")
-                Toast.makeText(requireContext(), "Must specify a destination", Toast.LENGTH_LONG)
+                Toast.makeText(requireContext(), R.string.must_specify, Toast.LENGTH_LONG)
                     .show()
                 return
             }
@@ -333,7 +333,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 Timber.d("Failed to launch, current location is not a valid destination")
                 Toast.makeText(
                     requireContext(),
-                    "Current Location is not a valid destination",
+                    R.string.current_location_invalid,
                     Toast.LENGTH_LONG
                 )
                     .show()
@@ -362,7 +362,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                     Timber.d("Launching DirectionFragment")
                     navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
                 } else {
-                    Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, R.string.too_far_from_morgantown, Toast.LENGTH_LONG).show()
                 }
             } else {
                 Timber.d("Launching DirectionFragment")

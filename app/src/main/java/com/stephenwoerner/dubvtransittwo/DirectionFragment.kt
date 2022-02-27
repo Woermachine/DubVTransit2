@@ -114,7 +114,7 @@ class DirectionFragment : Fragment(), LocationListener {
                         lon
                     ) > hundredMilesInKM
                 ) {
-                    Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, R.string.too_far_from_morgantown, Toast.LENGTH_LONG).show()
                     navController.navigateUp()
                 }
 
@@ -424,20 +424,22 @@ class DirectionFragment : Fragment(), LocationListener {
         }
 
         override fun onBindViewHolder(holder: DirectionsViewHolder, position: Int) {
-            holder.textView.text = dataList[position].direction
+            holder.apply {
+                textView.text = dataList[position].direction
 
-            dataList[position].stepDistance?.let {
-                holder.distance.visibility = View.VISIBLE
-                holder.distance.text = it.toString()
-            } ?: run {
-                holder.distance.visibility = View.GONE
-            }
+                dataList[position].stepDistance?.let {
+                    distance.visibility = View.VISIBLE
+                    distance.text = it.toString()
+                } ?: run {
+                    distance.visibility = View.GONE
+                }
 
-            dataList[position].stepDuration?.let {
-                holder.duration.visibility = View.VISIBLE
-                holder.duration.text = it.toString()
-            } ?: run {
-                holder.duration.visibility = View.GONE
+                dataList[position].stepDuration?.let {
+                    duration.visibility = View.VISIBLE
+                    duration.text = it.toString()
+                } ?: run {
+                    duration.visibility = View.GONE
+                }
             }
         }
 
