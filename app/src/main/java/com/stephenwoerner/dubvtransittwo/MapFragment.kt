@@ -32,7 +32,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.android.gms.maps.model.MarkerOptions
-import kotlinx.android.synthetic.main.fragment_map.*
+import com.stephenwoerner.dubvtransittwo.databinding.FragmentMapBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -59,13 +59,14 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 
     private lateinit var locationManager: LocationManager
 
-    private val timeFormat = SimpleDateFormat("h:mm a", Locale.US)
+    private val timeFormat = SimpleDateFormat("hh:mm a", Locale.US)
     private val dateFormat = SimpleDateFormat("MM/dd/yyyy", Locale.US)
     private var useCurrentTime = true
 
     private lateinit var mMap: GoogleMap
 
     lateinit var navController: NavController
+    private lateinit var binding : FragmentMapBinding
     private val viewModel: MyViewModel by activityViewModels()
 
     private val location: com.google.maps.model.LatLng
@@ -113,8 +114,9 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_map, container, false)
+    ): View {
+        binding = FragmentMapBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -131,21 +133,94 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             model.requestPRTStatus()
         }
 
-        viewModel.destination.observe(viewLifecycleOwner, { item ->
-            destBtn.text = item
-        })
-        destBtn.setOnClickListener { showLocationList(it) }
+        binding.apply {
+            viewModel.destination.observe(viewLifecycleOwner, { item ->
+                destBtn.text = item
+            })
+            destBtn.setOnClickListener { showLocationList(it) }
 
-        viewModel.source.observe(viewLifecycleOwner, { item ->
-            locationBtn.text = item
-        })
-        locationBtn.setOnClickListener { showLocationList(it) }
+            viewModel.source.observe(viewLifecycleOwner, { item ->
+                locationBtn.text = item
+            })
+            locationBtn.setOnClickListener { showLocationList(it) }
 
-        leavingTime = Calendar.getInstance()
-        timeBtn.text = timeFormat.format(leavingTime.time)
-        dateBtn.text = dateFormat.format(leavingTime.time)
+            leavingTime = Calendar.getInstance()
+            timeBtn.text = timeFormat.format(leavingTime.time)
+            dateBtn.text = dateFormat.format(leavingTime.time)
 
-        useCurrentTimeCB.setOnClickListener {
+            useCurrentTimeCB.setOnClickListener {
+                if (useCurrentTimeCB.isChecked) {
+                    useCurrentTime = true
+                    timeBtn.visibility = View.GONE
+                    dateBtn.visibility = View.GONE
+                } else {
+                    useCurrentTime = false
+                    timeBtn.visibility = View.VISIBLE
+                    dateBtn.visibility = View.VISIBLE
+                }
+            }
+
+            prtBadge.setOnClickListener {
+                val rotateAnimation = RotateAnimation(
+                    0F,
+                    359F,
+                    Animation.RELATIVE_TO_SELF,
+                    0.5f,
+                    Animation.RELATIVE_TO_SELF,
+                    0.5f
+                )
+                rotateAnimation.repeatCount = Animation.ABSOLUTE
+                rotateAnimation.repeatMode = Animation.RESTART
+                rotateAnimation.duration = 1000
+                refreshBtn.startAnimation(rotateAnimation)
+                CoroutineScope(Dispatchers.IO).launch {
+                    val prtOn = model.requestPRTStatus()
+                    activity?.runOnUiThread {
+                        if (prtOn)
+                            Toast.makeText(
+                                requireContext().applicationContext,
+                                "You can only update the status once every 30 seconds\nLong press to see full prt status",
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                        prtButtonColor()
+                    }
+                }
+            }
+            prtBadge.setOnLongClickListener {
+                showPRTDialog()
+                true
+            }
+
+            continueBtn.setOnClickListener {
+                launchDirectionActivity()
+            }
+
+            courseBtn.setOnClickListener(this@MapFragment)
+
+            dateBtn.setOnClickListener {
+                showDatePickerDialog()
+            }
+            destBtn.setOnClickListener {
+                showLocationList(it)
+            }
+            locationBtn.setOnClickListener {
+                showLocationList(it)
+            }
+            timeBtn.setOnClickListener {
+                showTimePickerDialog()
+            }
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                ActivityCompat.requestPermissions(
+                    requireActivity(),
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    1
+                )
+            }
             if (useCurrentTimeCB.isChecked) {
                 useCurrentTime = true
                 timeBtn.visibility = View.GONE
@@ -155,81 +230,9 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 timeBtn.visibility = View.VISIBLE
                 dateBtn.visibility = View.VISIBLE
             }
+            prtButtonColor()
+            Timber.d("setup complete")
         }
-
-        prt_badge.setOnClickListener {
-            val rotateAnimation = RotateAnimation(
-                0F,
-                359F,
-                Animation.RELATIVE_TO_SELF,
-                0.5f,
-                Animation.RELATIVE_TO_SELF,
-                0.5f
-            )
-            rotateAnimation.repeatCount = Animation.ABSOLUTE
-            rotateAnimation.repeatMode = Animation.RESTART
-            rotateAnimation.duration = 1000
-            refreshBtn.startAnimation(rotateAnimation)
-            CoroutineScope(Dispatchers.IO).launch {
-                val prtOn = model.requestPRTStatus()
-                activity?.runOnUiThread {
-                    if (prtOn)
-                        Toast.makeText(
-                            requireContext().applicationContext,
-                            "You can only update the status once every 30 seconds\nLong press to see full prt status",
-                            Toast.LENGTH_LONG
-                        ).show()
-
-                    prtButtonColor()
-                }
-            }
-        }
-        prt_badge.setOnLongClickListener {
-            showPRTDialog()
-            true
-        }
-
-        continueBtn.setOnClickListener {
-            launchDirectionActivity()
-        }
-
-        courseBtn.setOnClickListener(this)
-
-        dateBtn.setOnClickListener {
-            showDatePickerDialog()
-        }
-        destBtn.setOnClickListener {
-            showLocationList(it)
-        }
-        locationBtn.setOnClickListener {
-            showLocationList(it)
-        }
-        timeBtn.setOnClickListener {
-            showTimePickerDialog()
-        }
-        if (ContextCompat.checkSelfPermission(
-                requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            ActivityCompat.requestPermissions(
-                requireActivity(),
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                1
-            )
-        }
-        if (useCurrentTimeCB.isChecked) {
-            useCurrentTime = true
-            timeBtn.visibility = View.GONE
-            dateBtn.visibility = View.GONE
-        } else {
-            useCurrentTime = false
-            timeBtn.visibility = View.VISIBLE
-            dateBtn.visibility = View.VISIBLE
-        }
-        prtButtonColor()
-        Timber.d("setup complete")
-
     }
 
     /**
@@ -254,7 +257,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             MapFragment.requestKey -> {
                 val requestCode = result.getInt(LocationListFragment.requestCodeArgKey)
                 val selected = result.getString(LocationListFragment.returnVal)!!
-                Timber.d(
+                Timber.d(TAG,
                     String.format(
                         "PickLocationExpandable returned: %s %s",
                         requestCode,
@@ -277,7 +280,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         val listener = TimePickerDialog.OnTimeSetListener { _, hourOfDay, minute ->
             leavingTime[Calendar.HOUR_OF_DAY] = hourOfDay
             leavingTime[Calendar.MINUTE] = minute
-            timeBtn.text = timeFormat.format(leavingTime.time)
+            binding.timeBtn.text = timeFormat.format(leavingTime.time)
         }
         val timePickerDialog = TimePickerDialog(
             requireContext(),
@@ -301,7 +304,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             leavingTime[Calendar.YEAR] = year
             leavingTime[Calendar.MONTH] = month
             leavingTime[Calendar.DAY_OF_MONTH] = dayOfMonth
-            dateBtn.text = dateFormat.format(leavingTime.time)
+            binding.dateBtn.text = dateFormat.format(leavingTime.time)
         }
         val datePickerDialog = DatePickerDialog(
             requireContext(),
@@ -319,49 +322,52 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
      * Sends information to a new instance of DirectionActivity via an intent
      */
     private fun launchDirectionActivity() {
-        if (destBtn.text.toString().compareTo("Destination", true) == 0) {
-            Timber.d("Failed to launch, no destination selected")
-            Toast.makeText(requireContext(), "Must specify a destination", Toast.LENGTH_LONG).show()
-            return
-        }
-        if (destBtn.text.toString().compareTo("Current Location", true) == 0) {
-            Timber.d("Failed to launch, current location is not a valid destination")
-            Toast.makeText(
-                requireContext(),
-                "Current Location is not a valid destination",
-                Toast.LENGTH_LONG
-            )
-                .show()
-            return
-        }
+        binding.apply {
+            if (destBtn.text.toString().compareTo("Destination", true) == 0) {
+                Timber.d("Failed to launch, no destination selected")
+                Toast.makeText(requireContext(), "Must specify a destination", Toast.LENGTH_LONG)
+                    .show()
+                return
+            }
+            if (destBtn.text.toString().compareTo("Current Location", true) == 0) {
+                Timber.d("Failed to launch, current location is not a valid destination")
+                Toast.makeText(
+                    requireContext(),
+                    "Current Location is not a valid destination",
+                    Toast.LENGTH_LONG
+                )
+                    .show()
+                return
+            }
 
-        val bundle = Bundle().apply {
-            putString("origin", locationBtn.text.toString())
-            putString("destination", destBtn.text.toString())
-            putLong("leavingTime", leavingTime.timeInMillis)
-            putBoolean("useCurrentTime", useCurrentTime)
-        }
+            val bundle = Bundle().apply {
+                putString("origin", locationBtn.text.toString())
+                putString("destination", destBtn.text.toString())
+                putLong("leavingTime", leavingTime.timeInMillis)
+                putBoolean("useCurrentTime", useCurrentTime)
+            }
 
-        if(locationBtn.text.toString() == getString(R.string.current_location)) {
-            // Check distance to Morgantown
-            val morgantown = com.google.maps.model.LatLng(39.634224, -79.954850)
-            val hundredMilesInKM = 160.934
+            if (locationBtn.text.toString() == getString(R.string.current_location)) {
+                // Check distance to Morgantown
+                val morgantown = com.google.maps.model.LatLng(39.634224, -79.954850)
+                val hundredMilesInKM = 160.934
 
-            if (getDistanceFromLatLonInKm(
-                    morgantown.lat,
-                    morgantown.lng,
-                    location.lat,
-                    location.lng
-                ) < hundredMilesInKM
-            ) {
+                if (getDistanceFromLatLonInKm(
+                        morgantown.lat,
+                        morgantown.lng,
+                        location.lat,
+                        location.lng
+                    ) < hundredMilesInKM
+                ) {
+                    Timber.d("Launching DirectionFragment")
+                    navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
+                } else {
+                    Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
+                }
+            } else {
                 Timber.d("Launching DirectionFragment")
                 navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
-            } else {
-                Toast.makeText(context, "Too far from Morgantown", Toast.LENGTH_LONG).show()
             }
-        } else {
-            Timber.d("Launching DirectionFragment")
-            navController.navigate(R.id.action_mapFragment_to_directionFragment, bundle)
         }
     }
 
@@ -404,12 +410,11 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
      */
     private fun prtButtonColor() {
         Timber.d("updating a prt status color")
-        if (model.status == "1")
-            prt_badge.background =
-                ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_green)
-        else
-            prt_badge.background =
-                ContextCompat.getDrawable(requireContext(), R.drawable.rounded_bar_red)
+            binding.prtBadge.background =
+                ContextCompat.getDrawable(requireContext(),
+                    if (model.status == "1") R.drawable.rounded_bar_green
+                    else R.drawable.rounded_bar_red)
+
     }
 
     /**
@@ -482,7 +487,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 
     override fun onClick(v: View?) {
         when (v!!.id) {
-            courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
+            binding.courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
         }
     }
 }

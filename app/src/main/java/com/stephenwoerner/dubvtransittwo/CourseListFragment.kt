@@ -13,7 +13,7 @@ import androidx.navigation.NavController
 import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import kotlinx.android.synthetic.main.fragment_course_lists.*
+import com.stephenwoerner.dubvtransittwo.databinding.FragmentCourseListsBinding
 
 /**
  * Created by srwoerner on 8/26/17.
@@ -23,6 +23,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
     //private String DEBUG = "CourseList";
 //    private var context: Context? = null
 //    private lateinit var mDbHelper: CourseDbAdapter
+    private lateinit var binding : FragmentCourseListsBinding
     private lateinit var mDb: CourseDb
     private lateinit var courseArrayList: ArrayList<COURSES>
     private lateinit var navController: NavController
@@ -31,19 +32,22 @@ class CourseListFragment : Fragment(), View.OnClickListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_course_lists, container, false)
+    ): View {
+        binding = FragmentCourseListsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         navController = Navigation.findNavController(view)
-
-        add_course_button.setOnClickListener(this)
         mDb = CourseDb.get(requireContext().applicationContext)
-        course_list.layoutManager =
-            LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
+
+        binding.apply {
+            addCourseButton.setOnClickListener(this@CourseListFragment)
+            courseList.layoutManager =
+                LinearLayoutManager(requireContext(), RecyclerView.VERTICAL, false)
+        }
         fillData()
     }
 
@@ -61,7 +65,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
 //        course_list.notifyDataSe
 //        val adapter = CustomArrayAdapter(applicationContext, R.layout.course_items, courseArrayList)
         val a = CourseListAdapter(courseArrayList)
-        course_list.adapter = a
+        binding.courseList.adapter = a
     }
 
     private inner class CourseListAdapter(val dataList: ArrayList<COURSES>) :
@@ -104,7 +108,7 @@ class CourseListFragment : Fragment(), View.OnClickListener {
 
     override fun onClick(v: View) {
         when (v.id) {
-            add_course_button.id -> {
+            binding.courseList.id -> {
                 val bundle = bundleOf(Pair("isNew", true))
                 navController.navigate(R.id.action_courseList_to_editCourse, bundle)
             }

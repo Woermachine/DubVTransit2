@@ -15,7 +15,9 @@
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/maps_api_key" />
-        <activity android:name="com.stephenwoerner.dubvtransittwo.MainActivity" android:screenOrientation="portrait">
+        <activity android:name="com.stephenwoerner.dubvtransittwo.MainActivity"
+            android:screenOrientation="fullSensor"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />

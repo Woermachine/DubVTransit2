@@ -18,7 +18,6 @@ import android.view.ViewGroup
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.widget.AppCompatButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
@@ -28,7 +27,7 @@ import androidx.navigation.Navigation
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.maps.model.LatLng
-import kotlinx.android.synthetic.main.fragment_directions.*
+import com.stephenwoerner.dubvtransittwo.databinding.FragmentDirectionsBinding
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -65,6 +64,7 @@ class DirectionFragment : Fragment(), LocationListener {
     private val mapsDataClient = MapsDataClient()
 
     lateinit var navController: NavController
+    private lateinit var binding : FragmentDirectionsBinding
     private val viewModel: MyViewModel by activityViewModels()
 
     private val location: LatLng
@@ -126,8 +126,9 @@ class DirectionFragment : Fragment(), LocationListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_directions, container, false)
+    ): View {
+        binding = FragmentDirectionsBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -135,93 +136,96 @@ class DirectionFragment : Fragment(), LocationListener {
 
         navController = Navigation.findNavController(view)
 
-        walkButton.setOnClickListener {
-            changeSelected(it)
-        }
-
-        busButton.setOnClickListener {
-            changeSelected(it)
-        }
-
-        prtButton.setOnClickListener {
-            changeSelected(it)
-        }
-
-        carButton.setOnClickListener {
-            changeSelected(it)
-        }
-
-        var originStr = ""
-        try {
-            originStr = requireArguments().getString("origin")!!
-            destinationStr = requireArguments().getString("destination")!!
-            useCurrentTime = requireArguments().getBoolean("useCurrentTime", true)
-            leavingTimeMillis = requireArguments().getLong(
-                "leavingTime",
-                Calendar.getInstance().timeInMillis
-            )
-        } catch (e: NullPointerException) {
-            Timber.e(e)
-            navController.navigateUp()
-        }
-
-        val displayOrigin = "From: $originStr"
-        start_location.text = displayOrigin
-
-        val displayDestination = "To: $destinationStr"
-        destination_location.text = displayDestination
-
-        origin = when (originStr) {
-            getString(R.string.current_location) -> location
-            else -> {
-                val lookupString = if (model.allHashMap.containsKey(originStr)) {
-                    originStr
-                } else {
-                    val courseDb = CourseDb.get(requireContext().applicationContext)
-                    val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
-                    course.location
-                }
-                model.allHashMap[lookupString]!!
+        binding.apply {
+            walkButton.setOnClickListener {
+                changeSelected(it)
             }
-        }
 
-        if (!model.allHashMap.containsKey(destinationStr)) { //If its not in the HashMap then its a user course
-            val courseDb = CourseDb.get(requireContext().applicationContext)
-            val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
-            destinationStr = course.location
-        }
-        destination = model.allHashMap[destinationStr]!!
+            busButton.setOnClickListener {
+                changeSelected(it)
+            }
 
-        navigationButton.setOnClickListener {
-            val dest = if(selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest
-            AlertDialog.Builder(requireActivity())
-                .setIcon(R.drawable.navigation_black)
-                .setTitle(R.string.alert_title)
-                .setMessage(dest)
-                .setPositiveButton("Open") { _,_ -> openMaps(dest) }
-                .setCancelable(true)
-                .show()
-        }
+            prtButton.setOnClickListener {
+                changeSelected(it)
+            }
 
-        CoroutineScope(Dispatchers.Main).launch {
-            model.requestPRTStatus()
-            val results = mapsDataClient.execute(
-                leavingTimeMillis,
-                origin,
-                destination
-            )
+            carButton.setOnClickListener {
+                changeSelected(it)
+            }
 
-            if(isAdded) {
-                CoroutineScope(Dispatchers.Main).launch {
-                    onResults(results)
+            var originStr = ""
+            try {
+                originStr = requireArguments().getString("origin")!!
+                destinationStr = requireArguments().getString("destination")!!
+                useCurrentTime = requireArguments().getBoolean("useCurrentTime", true)
+                leavingTimeMillis = requireArguments().getLong(
+                    "leavingTime",
+                    Calendar.getInstance().timeInMillis
+                )
+            } catch (e: NullPointerException) {
+                Timber.e(e)
+                navController.navigateUp()
+            }
+
+            val displayOrigin = "From: $originStr"
+            startLocation.text = displayOrigin
+
+            val displayDestination = "To: $destinationStr"
+            destinationLocation.text = displayDestination
+
+            origin = when (originStr) {
+                getString(R.string.current_location) -> location
+                else -> {
+                    val lookupString = if (model.allHashMap.containsKey(originStr)) {
+                        originStr
+                    } else {
+                        val courseDb = CourseDb.get(requireContext().applicationContext)
+                        val course = courseDb.coursesQueries.selectCourse(originStr).executeAsOne()
+                        course.location
+                    }
+                    model.allHashMap[lookupString]!!
                 }
             }
+
+            if (!model.allHashMap.containsKey(destinationStr)) { //If its not in the HashMap then its a user course
+                val courseDb = CourseDb.get(requireContext().applicationContext)
+                val course = courseDb.coursesQueries.selectCourse(destinationStr).executeAsOne()
+                destinationStr = course.location
+            }
+            destination = model.allHashMap[destinationStr]!!
+
+            navigationButton.setOnClickListener {
+                val dest = if(selected == R.id.prtButton) R.string.nearest_prt else R.string.nearest_dest
+                AlertDialog.Builder(requireActivity())
+                    .setIcon(R.drawable.navigation_black)
+                    .setTitle(R.string.alert_title)
+                    .setMessage(dest)
+                    .setPositiveButton("Open") { _,_ -> openMaps(dest) }
+                    .setCancelable(true)
+                    .show()
+            }
+
+            CoroutineScope(Dispatchers.Main).launch {
+                model.requestPRTStatus()
+                val results = mapsDataClient.execute(
+                    leavingTimeMillis,
+                    origin,
+                    destination
+                )
+
+                if(isAdded) {
+                    CoroutineScope(Dispatchers.Main).launch {
+                        onResults(results)
+                    }
+                }
+            }
+
         }
     }
 
     private fun onResults(mapsTaskResults: MapsDataClient.MapsTaskResults) {
 
-        progress.visibility = View.GONE
+        binding.progress.visibility = View.GONE
 
         busDirections = DirectionAdapter(mapsTaskResults.busStepsAndDuration.directions)
         walkingDirections = DirectionAdapter(mapsTaskResults.walkStepsAndDuration.directions)
@@ -251,27 +255,29 @@ class DirectionFragment : Fragment(), LocationListener {
             return ""
         }
 
-        busButton.text = getButtonText(mapsTaskResults.busStepsAndDuration)
-        walkButton.text = getButtonText(mapsTaskResults.walkStepsAndDuration)
-        prtButton.text = getButtonText(mapsTaskResults.prtStepsAndDuration)
-        carButton.text = getButtonText(mapsTaskResults.carStepsAndDuration)
+        binding.apply {
+            busButton.text = getButtonText(mapsTaskResults.busStepsAndDuration)
+            walkButton.text = getButtonText(mapsTaskResults.walkStepsAndDuration)
+            prtButton.text = getButtonText(mapsTaskResults.prtStepsAndDuration)
+            carButton.text = getButtonText(mapsTaskResults.carStepsAndDuration)
 
-        list2.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        list2.adapter = directionsStepArrayAdapter
-        prtBadge.background = prtButtonColor()
+            list2.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+            list2.adapter = directionsStepArrayAdapter
+            prtBadge.background = prtButtonColor()
 
-        when (mapsTaskResults.fastestRoute) {
-            Route.CAR -> {
-                carButton.background = btnSelectColor
-            }
-            Route.BUS -> {
-                busButton.background = btnSelectColor
-            }
-            Route.WALK -> {
-                walkButton.background = btnSelectColor
-            }
-            Route.PRT -> {
-                prtButton.background = btnSelectColor
+            when (mapsTaskResults.fastestRoute) {
+                Route.CAR -> {
+                    carButton.background = btnSelectColor
+                }
+                Route.BUS -> {
+                    busButton.background = btnSelectColor
+                }
+                Route.WALK -> {
+                    walkButton.background = btnSelectColor
+                }
+                Route.PRT -> {
+                    prtButton.background = btnSelectColor
+                }
             }
         }
     }
@@ -286,34 +292,36 @@ class DirectionFragment : Fragment(), LocationListener {
         else
             getMuhDrawable(R.color.colorPrimary)
 
-        carButton.background = unselected
-        prtButton.background = unselected
-        walkButton.background = unselected
-        busButton.background = unselected
+        binding.apply {
+            carButton.background = unselected
+            prtButton.background = unselected
+            walkButton.background = unselected
+            busButton.background = unselected
 
-        val selectedColor = if(AppUtils.isDarkTheme(requireActivity()))
-            getMuhDrawable(R.color.colorAccentDark)
-        else
-            getMuhDrawable(R.color.colorPrimaryDark)
+            val selectedColor = if(AppUtils.isDarkTheme(requireActivity()))
+                getMuhDrawable(R.color.colorAccentDark)
+            else
+                getMuhDrawable(R.color.colorPrimaryDark)
 
-        selected = v.id
-//        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.buttonSelectedLight))
-        list2.adapter = when (selected) {
-            R.id.busButton -> {
-                busButton.background = selectedColor
-                busDirections
-            }
-            R.id.walkButton -> {
-                walkButton.background = selectedColor
-                walkingDirections
-            }
-            R.id.prtButton -> {
-                prtButton.background = selectedColor
-                prtDirections
-            }
-            else -> { // Assume Car
-                carButton.background = selectedColor
-                carDirections
+            selected = v.id
+    //        val selectedColor = ColorDrawable(ContextCompat.getColor(requireContext(), R.color.buttonSelectedLight))
+            list2.adapter = when (selected) {
+                R.id.busButton -> {
+                    busButton.background = selectedColor
+                    busDirections
+                }
+                R.id.walkButton -> {
+                    walkButton.background = selectedColor
+                    walkingDirections
+                }
+                R.id.prtButton -> {
+                    prtButton.background = selectedColor
+                    prtDirections
+                }
+                else -> { // Assume Car
+                    carButton.background = selectedColor
+                    carDirections
+                }
             }
         }
     }
@@ -329,7 +337,7 @@ class DirectionFragment : Fragment(), LocationListener {
 
     override fun onPause() {
         super.onPause()
-        progress.visibility = View.GONE
+        binding.progress.visibility = View.GONE
     }
 
     /**

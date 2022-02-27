@@ -8,7 +8,7 @@ import android.widget.SimpleExpandableListAdapter
 import androidx.fragment.app.Fragment
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.fragment_location_list.*
+import com.stephenwoerner.dubvtransittwo.databinding.FragmentLocationListBinding
 import timber.log.Timber
 
 /**
@@ -35,14 +35,16 @@ class LocationListFragment : Fragment() {
 
 
     lateinit var navController: NavController
+    private lateinit var binding : FragmentLocationListBinding
     lateinit var requestKey: String
     var requestCode: Int? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_location_list, container, false)
+    ): View {
+        binding = FragmentLocationListBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -125,20 +127,22 @@ class LocationListFragment : Fragment() {
             childData, R.layout.child_item,
             childFrom, childTo
         )
-        expandable_list.setAdapter(mAdapter)
+        binding.expandableList.apply {
+            setAdapter(mAdapter)
 
-        // perform set on group click listener event
-        expandable_list.setOnGroupClickListener { _, _, _, _ -> false }
+            // perform set on group click listener event
+            setOnGroupClickListener { _, _, _, _ -> false }
 
-        // perform set on child click listener event
-        expandable_list.setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
-            val result = Bundle().apply {
-                putString(returnVal, childItems[groupPosition][childPosition])
-                requestCode?.let { putInt(requestCodeArgKey, it) }
+            // perform set on child click listener event
+            setOnChildClickListener { _, _, groupPosition, childPosition, _ ->
+                val result = Bundle().apply {
+                    putString(returnVal, childItems[groupPosition][childPosition])
+                    requestCode?.let { putInt(requestCodeArgKey, it) }
+                }
+                parentFragmentManager.setFragmentResult(requestKey, result)
+                navController.navigateUp()
+                false
             }
-            parentFragmentManager.setFragmentResult(requestKey, result)
-            navController.navigateUp()
-            false
         }
     }
 }

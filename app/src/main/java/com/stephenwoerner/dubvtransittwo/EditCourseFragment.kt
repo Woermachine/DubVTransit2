@@ -10,7 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentResultListener
 import androidx.navigation.NavController
 import androidx.navigation.Navigation
-import kotlinx.android.synthetic.main.fragment_edit_course.*
+import com.stephenwoerner.dubvtransittwo.databinding.FragmentEditCourseBinding
 import timber.log.Timber
 
 /**
@@ -24,6 +24,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
     }
 
     private lateinit var navController: NavController
+    private lateinit var binding : FragmentEditCourseBinding
     private lateinit var courseDb: CourseDb
     private var rowId: Long = 0
     private lateinit var title: String
@@ -54,31 +55,36 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
 
         courseDb = CourseDb.get(requireContext().applicationContext)
 
-        done_button.setOnClickListener {
-            if(locationBtn.text.toString() == getString(R.string.select_location)) {
-                Toast.makeText(context, "Select a location, before saving", Toast.LENGTH_SHORT).show()
-            } else {
-                if (isNew)
-                    courseDb.coursesQueries.insert(
-                        course = editable_course_title.text.toString(),
-                        location = locationBtn.text.toString(), note = course_note.text.toString()
-                    )
-                else
-                    courseDb.coursesQueries.update(
-                        course = editable_course_title.text.toString(),
-                        location = locationBtn.text.toString(), note = course_note.text.toString(),
-                        _id = rowId,
-                    )
-                navController.navigateUp()
+        binding.apply {
+            doneButton.setOnClickListener {
+                if (locationBtn.text.toString() == getString(R.string.select_location)) {
+                    Toast.makeText(context, "Select a location, before saving", Toast.LENGTH_SHORT)
+                        .show()
+                } else {
+                    if (isNew)
+                        courseDb.coursesQueries.insert(
+                            course = editableCourseTitle.text.toString(),
+                            location = locationBtn.text.toString(),
+                            note = courseNote.text.toString()
+                        )
+                    else
+                        courseDb.coursesQueries.update(
+                            course = editableCourseTitle.text.toString(),
+                            location = locationBtn.text.toString(),
+                            note = courseNote.text.toString(),
+                            _id = rowId,
+                        )
+                    navController.navigateUp()
+                }
             }
-        }
-        locationBtn.setOnClickListener {
-            showLocationList()
-        }
-        if (!isNew) fillData()
+            locationBtn.setOnClickListener {
+                showLocationList()
+            }
+            if (!isNew) fillData()
 
-        if (returned != null)
-            locationBtn.text = returned
+            if (returned != null)
+                locationBtn.text = returned
+        }
 
         parentFragmentManager.setFragmentResultListener(requestKey, requireActivity(), this)
     }
@@ -87,9 +93,11 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         val course = courseDb.coursesQueries.selectCourse(title).executeAsOneOrNull()
         if (course != null) {
             rowId = course._id
-            editable_course_title.setText(course.course)
-            locationBtn.text = course.location
-            course_note.setText(course.note)
+            binding.apply {
+                editableCourseTitle.setText(course.course)
+                locationBtn.text = course.location
+                courseNote.setText(course.note)
+            }
         }
     }
 
@@ -105,12 +113,7 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
     override fun onFragmentResult(requestKey: String, result: Bundle) {
         when (requestKey) {
             EditCourseFragment.requestKey -> {
-                Timber.d(
-                    String.format(
-                        "Returned %s",
-                        result.getString(LocationListFragment.returnVal)
-                    )
-                )
+                Timber.d(TAG, String.format("Returned %s", result.getString(LocationListFragment.returnVal)))
                 returned = result.getString(LocationListFragment.returnVal)
             }
         }
