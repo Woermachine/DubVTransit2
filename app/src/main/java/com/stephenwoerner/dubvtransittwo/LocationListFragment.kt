@@ -13,7 +13,7 @@ import timber.log.Timber
 
 /**
  * Control interface to pick locations
- * Created by srwoerner on 5/13/17.
+ * Created by Stephen Woerner on 5/13/17.
  */
 class LocationListFragment : Fragment() {
 
@@ -35,10 +35,10 @@ class LocationListFragment : Fragment() {
     private var alreadyLoaded = false
 
 
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
     private lateinit var binding : FragmentLocationListBinding
-    lateinit var requestKey: String
-    var requestCode: Int? = null
+    private lateinit var requestKey: String
+    private var requestCode: Int? = null
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,

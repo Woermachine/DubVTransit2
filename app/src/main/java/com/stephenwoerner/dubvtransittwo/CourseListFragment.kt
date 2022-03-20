@@ -16,13 +16,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.stephenwoerner.dubvtransittwo.databinding.FragmentCourseListsBinding
 
 /**
- * Created by srwoerner on 8/26/17.
+ * Created by Stephen Woerner on 8/26/17.
  */
 class CourseListFragment : Fragment(), View.OnClickListener {
 
-    //private String DEBUG = "CourseList";
-//    private var context: Context? = null
-//    private lateinit var mDbHelper: CourseDbAdapter
     private lateinit var binding : FragmentCourseListsBinding
     private lateinit var mDb: CourseDb
     private lateinit var courseArrayList: ArrayList<COURSES>

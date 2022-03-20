@@ -16,7 +16,7 @@ import timber.log.Timber
 /**
  * EditCourse allows a user to edit the contents of a Course which is stored as an entry in the database
  *
- * Created by srwoerner on 9/22/17.
+ * Created by Stephen Woerner on 9/22/17.
  */
 class EditCourseFragment : Fragment(), FragmentResultListener {
     companion object {
