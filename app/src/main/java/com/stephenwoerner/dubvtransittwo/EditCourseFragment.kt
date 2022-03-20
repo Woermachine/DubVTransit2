@@ -20,7 +20,8 @@ import timber.log.Timber
  */
 class EditCourseFragment : Fragment(), FragmentResultListener {
     companion object {
-        val requestKey = "key_${EditCourseFragment::class.java.simpleName}"
+        private val TAG : String = EditCourseFragment::class.java.simpleName
+        val requestKey = "key_$TAG"
     }
 
     private lateinit var navController: NavController
@@ -34,8 +35,9 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-        return inflater.inflate(R.layout.fragment_edit_course, container, false)
+    ): View {
+        binding = FragmentEditCourseBinding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -105,7 +107,8 @@ class EditCourseFragment : Fragment(), FragmentResultListener {
         val bundle = bundleOf(
             Pair(LocationListFragment.allowUseCourses, false),
             Pair(LocationListFragment.allowCurrLocation, false),
-            Pair(LocationListFragment.requestKeyArgKey, requestKey)
+            Pair(LocationListFragment.requestKeyArgKey, requestKey),
+            Pair(LocationListFragment.showCourseBtn, false)
         )
         navController.navigate(R.id.action_editCourse_to_pickLocationExpandable, bundle)
     }

@@ -63,7 +63,7 @@ class DirectionFragment : Fragment(), LocationListener {
 
     private val mapsDataClient = MapsDataClient()
 
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
     private lateinit var binding : FragmentDirectionsBinding
     private val viewModel: MyViewModel by activityViewModels()
 
@@ -137,21 +137,11 @@ class DirectionFragment : Fragment(), LocationListener {
         navController = Navigation.findNavController(view)
 
         binding.apply {
-            walkButton.setOnClickListener {
-                changeSelected(it)
-            }
 
-            busButton.setOnClickListener {
-                changeSelected(it)
-            }
-
-            prtButton.setOnClickListener {
-                changeSelected(it)
-            }
-
-            carButton.setOnClickListener {
-                changeSelected(it)
-            }
+            walkButton.setOnClickListener { changeSelected(it) }
+            busButton.setOnClickListener { changeSelected(it) }
+            prtButton.setOnClickListener { changeSelected(it) }
+            carButton.setOnClickListener { changeSelected(it) }
 
             var originStr = ""
             try {

@@ -4,7 +4,8 @@ import com.google.maps.DirectionsApi
 import com.google.maps.GeoApiContext
 import com.google.maps.model.*
 import com.soywiz.klock.DateTime
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import timber.log.Timber
 import java.time.Instant
@@ -39,7 +40,7 @@ class MapsDataClient {
         val geoContext = GeoApiContext.Builder().apiKey(BuildConfig.MAPS_KEY).build()
         val instant = Instant.ofEpochSecond(leavingTime)
 
-        val deferredCar = GlobalScope.async {
+        val deferredCar = CoroutineScope(Dispatchers.IO).async {
             val carResult =
                 DirectionsApi.newRequest(geoContext).origin(origin).destination(destination)
                     .departureTime(instant).await()
@@ -48,7 +49,7 @@ class MapsDataClient {
             "car"
         }
 
-        val deferredBus = GlobalScope.async {
+        val deferredBus = CoroutineScope(Dispatchers.IO).async {
             val busResult =
                 DirectionsApi.newRequest(geoContext).origin(origin).destination(destination)
                     .departureTime(instant).mode(TravelMode.TRANSIT).transitMode(TransitMode.BUS)
@@ -58,7 +59,7 @@ class MapsDataClient {
             "bus"
         }
 
-        val deferredWalk = GlobalScope.async {
+        val deferredWalk = CoroutineScope(Dispatchers.IO).async {
             val walkingResult =
                 DirectionsApi.newRequest(geoContext).origin(origin).destination(destination)
                     .departureTime(instant).mode(TravelMode.WALKING).await()
@@ -67,7 +68,7 @@ class MapsDataClient {
             "walk"
         }
 
-        val deferredPrt = GlobalScope.async {
+        val deferredPrt = CoroutineScope(Dispatchers.IO).async {
             model.requestPRTStatus()
             if (model.isOpenNow()) {
                 val prtResultA =

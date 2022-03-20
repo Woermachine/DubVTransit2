@@ -10,13 +10,6 @@
         android:label="fragment_map"
         tools:layout="@layout/fragment_map" >
         <action
-            android:id="@+id/action_mapFragment_to_courseList"
-            app:destination="@id/courseList"
-            app:popEnterAnim="@anim/slide_in_left"
-            app:popExitAnim="@anim/slide_out_right"
-            app:enterAnim="@anim/slide_in_right"
-            app:exitAnim="@anim/slide_out_left"/>
-        <action
             android:id="@+id/action_mapFragment_to_pickLocationExpandable"
             app:destination="@id/pickLocationExpandable"
             app:popEnterAnim="@anim/slide_in_left"
@@ -57,7 +50,11 @@
         android:id="@+id/pickLocationExpandable"
         android:name="com.stephenwoerner.dubvtransittwo.LocationListFragment"
         android:label="PickLocationExpandable"
-        tools:layout="@layout/fragment_location_list"/>
+        tools:layout="@layout/fragment_location_list">
+        <action
+            android:id="@+id/action_pickLocationExpandable_to_courseList"
+            app:destination="@id/courseList" />
+    </fragment>
     <fragment
         android:id="@+id/directionFragment"
         android:name="com.stephenwoerner.dubvtransittwo.DirectionFragment"

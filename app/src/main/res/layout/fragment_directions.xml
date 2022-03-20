@@ -144,18 +144,23 @@
             android:background="@drawable/rounded_textview_green" />
 
     </RelativeLayout>
+
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/navigationButton"
-        android:contentDescription="@string/open_directions"
+        style="@style/FAB"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@id/list2"
         android:layout_alignParentEnd="true"
 
-        app:srcCompat="@drawable/navigation_white"
-        style="@style/FAB"
-        android:layout_margin="10dp"
-        android:elevation="2dp"/>
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="10dp"
+        app:borderWidth="0dp"
+        android:contentDescription="@string/open_directions"
+        android:elevation="2dp"
+        app:srcCompat="@drawable/navigation_white" />
 
     <RelativeLayout
         android:id="@+id/progress"

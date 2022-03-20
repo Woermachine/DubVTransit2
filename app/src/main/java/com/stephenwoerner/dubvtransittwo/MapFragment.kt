@@ -42,15 +42,14 @@ import java.util.*
 import kotlin.math.*
 
 
-val TAG: String = MapFragment::class.java.simpleName
-
 /**
  * Allows user to specify an origin, destination, and departure
  */
-class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, LocationListener,
+class MapFragment : Fragment(), OnMapReadyCallback, LocationListener,
     FragmentResultListener {
 
     companion object {
+        val TAG: String = MapFragment::class.java.simpleName
         val requestKey = "key_$TAG"
     }
 
@@ -65,7 +64,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
 
     private lateinit var mMap: GoogleMap
 
-    lateinit var navController: NavController
+    private lateinit var navController: NavController
     private lateinit var binding : FragmentMapBinding
     private val viewModel: MyViewModel by activityViewModels()
 
@@ -133,16 +132,30 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
             model.requestPRTStatus()
         }
 
+
         binding.apply {
-            viewModel.destination.observe(viewLifecycleOwner, { item ->
+            viewModel.destination.observe(viewLifecycleOwner) { item ->
                 destBtn.text = item
-            })
+            }
             destBtn.setOnClickListener { showLocationList(it) }
 
-            viewModel.source.observe(viewLifecycleOwner, { item ->
+            viewModel.source.observe(viewLifecycleOwner) { item ->
                 locationBtn.text = item
-            })
+            }
             locationBtn.setOnClickListener { showLocationList(it) }
+
+            viewModel.prtUpdated.observe(viewLifecycleOwner) { isOpen ->
+                isOpen?.let { open ->
+                    if (open)
+                        Toast.makeText(
+                            requireContext().applicationContext,
+                            "You can only update the status once every 30 seconds\nLong press to see full prt status",
+                            Toast.LENGTH_LONG
+                        ).show()
+
+                    prtButtonColor()
+                }
+            }
 
             leavingTime = Calendar.getInstance()
             timeBtn.text = timeFormat.format(leavingTime.time)
@@ -173,19 +186,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 rotateAnimation.repeatMode = Animation.RESTART
                 rotateAnimation.duration = 1000
                 refreshBtn.startAnimation(rotateAnimation)
-                CoroutineScope(Dispatchers.IO).launch {
-                    val prtOn = model.requestPRTStatus()
-                    activity?.runOnUiThread {
-                        if (prtOn)
-                            Toast.makeText(
-                                requireContext().applicationContext,
-                                "You can only update the status once every 30 seconds\nLong press to see full prt status",
-                                Toast.LENGTH_LONG
-                            ).show()
-
-                        prtButtonColor()
-                    }
-                }
+                viewModel.requestPRTStatus()
             }
             prtBadge.setOnLongClickListener {
                 showPRTDialog()
@@ -196,20 +197,13 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                 launchDirectionActivity()
             }
 
-            courseBtn.setOnClickListener(this@MapFragment)
+//            courseBtn.setOnClickListener(this@MapFragment)
 
-            dateBtn.setOnClickListener {
-                showDatePickerDialog()
-            }
-            destBtn.setOnClickListener {
-                showLocationList(it)
-            }
-            locationBtn.setOnClickListener {
-                showLocationList(it)
-            }
-            timeBtn.setOnClickListener {
-                showTimePickerDialog()
-            }
+            dateBtn.setOnClickListener { showDatePickerDialog() }
+            destBtn.setOnClickListener { showLocationList(it) }
+            locationBtn.setOnClickListener { showLocationList(it) }
+            timeBtn.setOnClickListener { showTimePickerDialog() }
+
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.ACCESS_FINE_LOCATION
@@ -439,7 +433,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         mMap.uiSettings.isMapToolbarEnabled = false
 
         mMap.clear()
-        viewModel.destination.observe(viewLifecycleOwner, { item ->
+        viewModel.destination.observe(viewLifecycleOwner) { item ->
             val destLoc = model.findLatLng(item, location, requireContext().applicationContext)
             destLoc?.let {
                 val destLatLng = LatLng(it.lat, it.lng)
@@ -449,9 +443,9 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                         .title(item)
                 )
             }
-        })
+        }
 
-        viewModel.source.observe(viewLifecycleOwner, { item ->
+        viewModel.source.observe(viewLifecycleOwner) { item ->
             val startLoc = model.findLatLng(item, location, requireContext().applicationContext)
             startLoc?.let {
                 val startLatLng = LatLng(it.lat, it.lng)
@@ -461,7 +455,7 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
                         .title(item)
                 )
             }
-        })
+        }
 
         // Add a marker in Sydney and move the camera
         val morgantown = LatLng(39.634224, -79.954850)
@@ -485,9 +479,9 @@ class MapFragment : Fragment(), View.OnClickListener, OnMapReadyCallback, Locati
         locationManager.removeUpdates(this)
     }
 
-    override fun onClick(v: View?) {
-        when (v!!.id) {
-            binding.courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
-        }
-    }
+//    override fun onClick(v: View?) {
+//        when (v!!.id) {
+//            binding.courseBtn.id -> navController.navigate(R.id.action_mapFragment_to_courseList)
+//        }
+//    }
 }

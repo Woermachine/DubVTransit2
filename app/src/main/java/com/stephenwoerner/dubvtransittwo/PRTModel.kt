@@ -13,7 +13,7 @@ import kotlin.collections.HashMap
 import kotlin.math.pow
 
 class PRTModel private constructor() {
-    val PRT_STATUS_CLOSED = "7"
+
 
     var status: String? = PRT_STATUS_CLOSED
     var message = ""
@@ -32,6 +32,8 @@ class PRTModel private constructor() {
 
     companion object {
         private lateinit var model: PRTModel
+
+        const val PRT_STATUS_CLOSED = "7"
 
         @JvmStatic
         fun get(): PRTModel {
@@ -138,8 +140,11 @@ class PRTModel private constructor() {
     }
 
     data class PRTResponse(
-        var status: String, var message: String, var timestamp: String,
-        var stations: Array<String>, var bussesDispatched: String,
+        var status: String,
+        var message: String,
+        var timestamp: String,
+        var stations: Array<String>,
+        var bussesDispatched: String,
         var duration: Array<String>
     )
 
@@ -301,6 +306,11 @@ class PRTModel private constructor() {
                 model.allHashMap[lookupString]!!
             }
         }
+    }
+
+    var test = false
+    fun test() {
+        test = !test
     }
 
 }

@@ -85,5 +85,6 @@
     <string name="problem_opening_editcourse">Problem opening EditCourse</string>
     <string name="select_loc_before_saving">Select a location, before saving</string>
 
+    <string name="prt_api_url">https://prtstatus.wvu.edu/api/%f/?format=json</string>
 
 </resources>

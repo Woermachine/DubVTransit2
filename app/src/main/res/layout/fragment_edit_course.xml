@@ -60,6 +60,7 @@
         android:layout_alignParentBottom="true"
         android:layout_alignParentEnd="true"
         android:contentDescription="@string/save_button_desc"
+        app:borderWidth="0dp"
         style="@style/FAB"/>
 
 
